@@ -7,16 +7,18 @@
 #'
 #' @returns The standardized "Marker_list" in the SlimR package.
 #' @export
+#' @family Standardized_Marker_list_Input
 #'
 #' @importFrom readxl excel_sheets
 #'
 #' @examples
-#' \dontrun{Markers_list_Excel <- read_excel_markers(
-#'          "D:/Laboratory/Marker_load.xlsx"
-#'          )
-#'          }
+#' \dontrun{
+#' Markers_list_Excel <- Read_excel_markers(
+#'     "D:/Laboratory/Marker_load.xlsx"
+#'     )
+#'     }
 #'
-read_excel_markers <- function(path) {
+Read_excel_markers <- function(path) {
   if (!file.exists(path)) stop("Path does not exist:")
   file_info <- file.info(path)
 

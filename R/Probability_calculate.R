@@ -19,6 +19,8 @@
 #' @returns Average expression of genes in the input "Seurat" object given
 #'     "cluster_col" and given "features".
 #'
+#' @family Use_in_packages
+#'
 #' @importFrom Seurat DefaultAssay DefaultAssay<- CellsByIdentities FetchData
 #' @importFrom stats sd weighted.mean
 #'
@@ -58,9 +60,16 @@ calculate_probability <- function(
 
     return(list(
       avg = avg.exp,
+      frac = frac.expressing,
       specificity = specificity_score
     ))
   })
+
+  expr_matrix <- do.call(rbind, lapply(cluster_stats, function(x) x$avg))
+  rownames(expr_matrix) <- unique(data.features$id)
+
+  frac_matrix <- do.call(rbind, lapply(cluster_stats, function(x) x$frac))
+  rownames(frac_matrix) <- unique(data.features$id)
 
   specificity_matrix <- do.call(rbind, lapply(cluster_stats, function(x) x$specificity))
   rownames(specificity_matrix) <- unique(data.features$id)
@@ -79,9 +88,9 @@ calculate_probability <- function(
     weighted.mean(x, w = gene_weights, na.rm = TRUE)
   })
 
-  final_scores <- (cluster_scores - min(cluster_scores)) /
-    (max(cluster_scores) - min(cluster_scores))
+  names(cluster_scores) <- rownames(specificity_matrix)
 
-  names(final_scores) <- rownames(specificity_matrix)
-  return(final_scores)
+  return(list(cluster_expr = expr_matrix,
+              cluster_frac = frac_matrix,
+              cluster_scores = cluster_scores))
 }

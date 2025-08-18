@@ -6,5 +6,7 @@
 #'
 #' @details This list is used to choose filters for creation of standardized marker list.
 #'
+#' @family SlimR_Database
+#'
 #' @source \url{https://panglaodb.se/}
 "PanglaoDB_table"

@@ -1,4 +1,4 @@
-#' Uses "marker_list" to generate heatmaps for cell annotation
+#' Uses "marker_list" to generate heatmap for cell annotation
 #'
 #' @param seurat_obj Enter the Seurat object with annotation columns such as
 #'     "seurat_cluster" in meta.data to be annotated.
@@ -10,9 +10,9 @@
 #'     gene format correction of markers entered by "Marker_list".
 #' @param cluster_col Enter annotation columns such as "seurat_cluster" in meta.data
 #'     of the Seurat object to be annotated. Default parameters use "cluster_col =
-#'     "seurat_clusters"".
+#'     'seurat_clusters'".
 #' @param assay Enter the assay used by the Seurat object, such as "RNA". Default
-#'     parameters use "assay = "RNA".
+#'     parameters use "assay = 'RNA'".
 #' @param min_expression The min_expression parameter defines a threshold value to
 #'     determine whether a cell's expression of a feature is considered "expressed"
 #'     or not. It is used to filter out low-expression cells that may contribute
@@ -22,32 +22,42 @@
 #'     contributes to its "specificity score." It amplifies or suppresses the impact
 #'     of variability in the final score calculation.Default parameters use
 #'     "specificity_weight = 3".
+#' @param colour_low Color for lowest probability level in Heatmap visualization of
+#'     probability matrix. (default = "navy")
+#' @param colour_high Color for highest probability level Heatmap visualization of
+#'     probability matrix. (default = "firebrick3")
 #'
 #' @returns The heatmap of the comparison between "cluster_col" in the
 #'     Seurat object and the given gene set "gene_list" needs to be annotated.
 #' @export
+#' @family Semi_Automated_Annotation_Workflow
 #'
 #' @importFrom grDevices colorRampPalette
 #'
 #' @examples
-#' \dontrun{Celltype_annotation_Heatmap(seurat_obj = sce,
-#'          gene_list = Markers_list,
-#'          species = "Human",
-#'          cluster_col = "seurat_clusters",
-#'          assay = "RNA",
-#'          min_expression = 0.1,
-#'          specificity_weight = 3
-#'          )
-#'          }
+#' \dontrun{
+#' Celltype_Annotation_Heatmap(seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     cluster_col = "seurat_clusters",
+#'     assay = "RNA",
+#'     min_expression = 0.1,
+#'     specificity_weight = 3,
+#'     colour_low = "navy",
+#'     colour_high = "firebrick3"
+#'     )
+#'     }
 #'
-Celltype_annotation_Heatmap <- function(
+Celltype_Annotation_Heatmap <- function(
     seurat_obj,
     gene_list,
     species,
     cluster_col = "seurat_clusters",
     assay = "RNA",
     min_expression = 0.1,
-    specificity_weight = 3
+    specificity_weight = 3,
+    colour_low = "navy",
+    colour_high = "firebrick3"
 ) {
   required_packages <- c("ggplot2", "patchwork", "dplyr", "scales", "tidyr", "gridExtra", "gtable", "grid")
   for (pkg in required_packages) {
@@ -61,9 +71,14 @@ Celltype_annotation_Heatmap <- function(
   if (!is.list(gene_list)) stop("Gene list must be a list of data.frames!")
   if (species != "Human" && species != "Mouse") stop("species must be 'Human' or 'Mouse'")
 
-  cluster_expr_list <- list()
-  for (cell_type in names(gene_list)) {
-    message("Processing cell type:", cell_type)
+  cluster_scores_list <- list()
+  cell_types <- names(gene_list)
+
+  message(paste0("SlimR: The 'Celltype_annotation_Heatmap()' function has now been replaced by the 'Celltype_Calculate()' function. You can still use it, but this function is no longer actively updated. It is recommended to use 'Celltype_Calculate()' instead."))
+
+  for (i in seq_along(cell_types)) {
+    cell_type <- cell_types[i]
+
     current_df <- gene_list[[cell_type]]
 
     if (ncol(current_df) < 1) {
@@ -99,17 +114,23 @@ Celltype_annotation_Heatmap <- function(
                                              features = gene_order_processed,
                                              min_expression = min_expression,
                                              specificity_weight = specificity_weight)
-    cluster_expr_list[[cell_type]] <- prob_expression
-    message(paste0(cell_type," probability calculated","\n"))
+    cluster_scores_list[[cell_type]] <- prob_expression$cluster_scores
   }
 
-  expr_matrix <- do.call(rbind, cluster_expr_list)
+  expr_matrix <- do.call(rbind, cluster_scores_list)
 
-  result_matrix <- t(expr_matrix)
+  normalize_row <- function(x) {
+    if (diff(range(x)) == 0) return(rep(0, length(x)))
+    (x - min(x)) / (max(x) - min(x))
+  }
+
+  normalize_matrix <- apply(expr_matrix, 2, normalize_row)
+
+  result_matrix <- t(normalize_matrix)
 
   p <- pheatmap::pheatmap(result_matrix,
                           main = "Cell annotation heatmap | SlimR",
-                          color = colorRampPalette(c("navy", "white", "firebrick3"))(50),
+                          color = colorRampPalette(c(colour_low, "white", colour_high))(50),
                           fontsize = 12,
                           cluster_rows = T,
                           cluster_cols = T,

@@ -10,10 +10,7 @@ Markers_filter_Cellmarker2(
   tissue_class = NULL,
   tissue_type = NULL,
   cancer_type = NULL,
-  cell_type = NULL,
-  cell_name = NULL,
-  marker = NULL,
-  counts = NULL
+  cell_type = NULL
 )
 }
 \arguments{
@@ -44,15 +41,6 @@ website.}
 The input can be retrieved by "Cellmarkers2_table". For more information,
 please refer to http://117.50.127.228/CellMarker/ on Cellmarkers2's official
 website.}
-
-\item{cell_name}{Warning: Do not enter information, this parameter is used to return
-results for saving}
-
-\item{marker}{Warning: Do not enter information, this parameter is used to return
-results for saving}
-
-\item{counts}{Warning: Do not enter information, this parameter is used to return
-results for saving}
 }
 \value{
 The standardized "Marker_list" in the SlimR package
@@ -62,16 +50,20 @@ Create Marker_list from the Cellmarkers2 database
 }
 \examples{
 Cellmarker2 <- SlimR::Cellmarker2
-          Markers_list_Cellmarker2 <- Markers_filter_Cellmarker2(
-          Cellmarker2,
-          species = "Human",
-          tissue_class = "Intestine",
-          tissue_type = NULL,
-          cancer_type = NULL,
-          cell_type = NULL,
-          cell_name = NULL,
-          marker = NULL,
-          counts = NULL
-          )
+Markers_list_Cellmarker2 <- Markers_filter_Cellmarker2(
+    Cellmarker2,
+    species = "Human",
+    tissue_class = "Intestine",
+    tissue_type = NULL,
+    cancer_type = NULL,
+    cell_type = NULL
+    )
 
 }
+\seealso{
+Other Standardized_Marker_list_Input: 
+\code{\link{Markers_filter_PanglaoDB}()},
+\code{\link{Read_excel_markers}()},
+\code{\link{Read_seurat_markers}()}
+}
+\concept{Standardized_Marker_list_Input}

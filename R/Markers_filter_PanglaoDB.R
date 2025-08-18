@@ -12,15 +12,15 @@
 #'
 #' @returns The standardized "Marker_list" in the SlimR package
 #' @export
+#' @family Standardized_Marker_list_Input
 #'
-#' @examples PanglaoDB <- SlimR::PanglaoDB
-#'           Markers_list_panglaoDB <- Markers_filter_PanglaoDB(
-#'           PanglaoDB,
-#'           species_input = 'Human',
-#'           organ_input = 'GI tract'
-#'           )
-#'
-#'
+#' @examples
+#' PanglaoDB <- SlimR::PanglaoDB
+#' Markers_list_panglaoDB <- Markers_filter_PanglaoDB(
+#'     PanglaoDB,
+#'     species_input = 'Human',
+#'     organ_input = 'GI tract'
+#'     )
 #'
 Markers_filter_PanglaoDB <- function(df, species_input, organ_input) {
   required_columns <- c("species", "official.gene.symbol", "cell.type",

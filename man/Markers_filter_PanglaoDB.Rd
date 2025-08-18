@@ -27,12 +27,17 @@ Create Marker_list from the PanglaoDB database
 }
 \examples{
 PanglaoDB <- SlimR::PanglaoDB
-          Markers_list_panglaoDB <- Markers_filter_PanglaoDB(
-          PanglaoDB,
-          species_input = 'Human',
-          organ_input = 'GI tract'
-          )
-
-
+Markers_list_panglaoDB <- Markers_filter_PanglaoDB(
+    PanglaoDB,
+    species_input = 'Human',
+    organ_input = 'GI tract'
+    )
 
 }
+\seealso{
+Other Standardized_Marker_list_Input: 
+\code{\link{Markers_filter_Cellmarker2}()},
+\code{\link{Read_excel_markers}()},
+\code{\link{Read_seurat_markers}()}
+}
+\concept{Standardized_Marker_list_Input}

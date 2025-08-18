@@ -9,32 +9,42 @@
 #'     gene format correction of markers entered by "Marker_list".
 #' @param cluster_col Enter annotation columns such as "seurat_cluster" in meta.data
 #'     of the Seurat object to be annotated. Default parameters use "cluster_col =
-#'     "seurat_clusters"".
+#'     'seurat_clusters'".
 #' @param assay Enter the assay used by the Seurat object, such as "RNA". Default
 #'     parameters use "assay = "RNA"".
-#' @param save_path The output path of the cell annotation picture. Default parameters
-#'     use "save_path = "./SlimR/Celltype_annotation_Cellmarker2/"".
+#' @param save_path The output path of the cell annotation picture. Example parameters
+#'     use "save_path = './SlimR/Celltype_annotation_Cellmarker2/'".
 #' @param min_counts The minimum number of counts of genes in "Marker_list" entered.
 #'     This number represents the number of the same gene in the same species and
 #'     the same location in the Cellmarker2 database used for annotation of this cell
 #'     type. Default parameters use "min_counts = 1".
+#' @param colour_low Color for lowest expression level. (default = "white")
+#' @param colour_high Color for highest expression level. (default = "black")
+#' @param colour_low_mertic Color for lowest mertic level. (default = "white")
+#' @param colour_high_mertic Color for highest mertic level. (default = "black")
 #'
 #' @returns The cell annotation picture is saved in "save_path".
 #' @export
+#' @family Other_Functions_Provided_By_SlimR
 #'
 #' @importFrom ggplot2 ggplot aes theme labs element_text element_blank
 #' @importFrom ggplot2 geom_tile scale_fill_gradient theme_minimal
 #' @importFrom ggplot2 margin
 #'
 #' @examples
-#' \dontrun{Celltype_annotation_Cellmarker2(seurat_obj = sce,
-#'          gene_list = Markers_list_Cellmarker2,
-#'          species = "Human",
-#'          cluster_col = "seurat_clusters",
-#'          assay = "RNA",
-#'          save_path = file.path(tempdir(),"SlimR_Celltype_annotation_Cellmarker2")
-#'          )
-#'          }
+#' \dontrun{
+#' Celltype_annotation_Cellmarker2(seurat_obj = sce,
+#'     gene_list = Markers_list_Cellmarker2,
+#'     species = "Human",
+#'     cluster_col = "seurat_clusters",
+#'     assay = "RNA",
+#'     save_path = file.path(tempdir(),"SlimR_Celltype_annotation_Cellmarker2")
+#'     colour_low = "white",
+#'     colour_high = "navy",
+#'     colour_low_mertic = "white",
+#'     colour_high_mertic = "navy",
+#'     )
+#'     }
 #'
 Celltype_annotation_Cellmarker2 <- function(
     seurat_obj,
@@ -43,7 +53,11 @@ Celltype_annotation_Cellmarker2 <- function(
     cluster_col = "seurat_clusters",
     assay = "RNA",
     save_path = NULL,
-    min_counts = 1
+    min_counts = 1,
+    colour_low = "white",
+    colour_high = "navy",
+    colour_low_mertic = "white",
+    colour_high_mertic = "navy"
 ) {
   if (!requireNamespace("cowplot", quietly = TRUE)) {
     stop("Please install package 'cowplot': install.packages('cowplot')")
@@ -63,6 +77,11 @@ Celltype_annotation_Cellmarker2 <- function(
     path <- file.path(tempdir(), "fallback_output")
   }
 
+  colour_low <- if (is.null(colour_low)) "white" else colour_low
+  colour_high <- if (is.null(colour_high)) "navy" else colour_high
+  colour_low_mertic <- if (is.null(colour_low_mertic)) colour_low else colour_low_mertic
+  colour_high_mertic <- if (is.null(colour_high_mertic)) colour_high else colour_high_mertic
+
   dir.create(save_path, showWarnings = FALSE)
 
   seurat_genes <- rownames(seurat_obj@assays[[assay]])
@@ -75,8 +94,15 @@ Celltype_annotation_Cellmarker2 <- function(
     return(paste(first_char, rest, sep = ""))
   }
 
-  for (cell_type in names(gene_list)) {
-    message("Processing cell type:", cell_type, "\n")
+  cell_types <- names(gene_list)
+  total <- length(cell_types)
+  cycles <- 0
+
+  message(paste0("SlimR: The input 'Markers_list' has ",total," cell types to be processed."))
+
+  for (i in seq_along(cell_types)) {
+    cell_type <- cell_types[i]
+    message(paste0("\n","[", i, "/", total, "] Processing cell type: ", cell_type))
 
     current_df <- gene_list[[cell_type]]
     if (!all(c("marker", "counts") %in% names(current_df))) {
@@ -134,15 +160,15 @@ Celltype_annotation_Cellmarker2 <- function(
     num_idents <- length(unique(Idents(seurat_obj)))
     num_genes <- length(valid_features)
 
-    plot_height <- max(6, num_idents * 0.5)
-    plot_width <- max(8, num_genes * 0.3)
+    plot_height <- max(6, num_idents * 0.8) + 1
+    plot_width <- max(10, num_genes * 0.4)
 
     dp <- Seurat::DotPlot(
       seurat_obj,
       features = valid_features,
       assay = assay,
       group.by = cluster_col,
-      cols = c("white", "dodgerblue")
+      cols = c(colour_low, colour_high)
     ) +
       theme(
         axis.text.x = element_text(
@@ -155,7 +181,7 @@ Celltype_annotation_Cellmarker2 <- function(
         axis.title.y = element_text(family = "sans")
       ) +
       labs(
-        title = paste("Cell Type:", cell_type, "| Database: Cellmarkers2.0 | SlimR"),
+        title = paste("Cell Type:", cell_type, "| Markers_list from Cellmarkers2 Database | SlimR"),
         subtitle = "Dot size: Expression percentage | Color: Normalized expression level"
       )
 
@@ -168,8 +194,8 @@ Celltype_annotation_Cellmarker2 <- function(
     hp <- ggplot(heatmap_data, aes(x = Gene, y = "Counts", fill = Counts)) +
       geom_tile(color = "gray") +
       scale_fill_gradient(
-        low = "white",
-        high = "dodgerblue",
+        low = colour_low_mertic,
+        high = colour_high_mertic,
         limits = c(0, max(counts_for_heatmap))
       ) +
       theme_minimal() +
@@ -193,7 +219,7 @@ Celltype_annotation_Cellmarker2 <- function(
       labs(
         x = NULL,
         y = "Counts",
-        title = "Gene counts in database Cellmarkers2.0"
+        title = "Gene counts in Cellmarkers2.0 database"
       )
 
     base_height <- 5
@@ -214,9 +240,9 @@ Celltype_annotation_Cellmarker2 <- function(
       width = plot_width,
       limitsize = FALSE
     )
-
-    message("Combined plot saved for", cell_type, "\n\n")
+    cycles <- cycles + 1
+    message(paste0("[", i, "/", total, "] Features plot saved for: ", cell_type))
   }
-
-  message("All combined plots saved to:", save_path)
+  message(paste0("\n","SlimR: Out of the ",total," cell types in 'Markers_list', ",cycles," cell types have been processed. You can see the reason for not processing cell types by 'warnings()'."))
+  message(paste0("\n","SlimR: Visualization saved to: ", normalizePath(save_path)))
 }

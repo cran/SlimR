@@ -9,28 +9,38 @@
 #'     gene format correction of markers entered by "Marker_list".
 #' @param cluster_col Enter annotation columns such as "seurat_cluster" in meta.data
 #'     of the Seurat object to be annotated. Default parameters use "cluster_col =
-#'     "seurat_clusters"".
+#'     'seurat_clusters'".
 #' @param assay Enter the assay used by the Seurat object, such as "RNA". Default
-#'     parameters use "assay = "RNA"".
-#' @param save_path The output path of the cell annotation picture. Default parameters
-#'     use "save_path = "./SlimR/Celltype_annotation_PanglaoDB/"".
+#'     parameters use "assay = 'RNA'".
+#' @param save_path The output path of the cell annotation picture. Example parameters
+#'     use "save_path = './SlimR/Celltype_annotation_PanglaoDB/'".
 #' @param metric_names Warning: Do not enter information. This parameter is used to
 #'     check if "Marker_list" conforms to the PanglaoDB database output.
+#' @param colour_low Color for lowest expression level. (default = "white")
+#' @param colour_high Color for highest expression level. (default = "black")
+#' @param colour_low_mertic Color for lowest mertic level. (default = "white")
+#' @param colour_high_mertic Color for highest mertic level. (default = "black")
 #'
 #' @returns The cell annotation picture is saved in "save_path".
 #' @export
+#' @family Other_Functions_Provided_By_SlimR
 #'
 #' @importFrom dplyr all_of
 #'
 #' @examples
-#' \dontrun{Celltype_annotation_PanglaoDB(seurat_obj = sce,
-#'          gene_list = Markers_list_panglaoDB,
-#'          species = "Human",
-#'          cluster_col = "seurat_clusters",
-#'          assay = "RNA",
-#'          save_path = file.path(tempdir(),"SlimR_Celltype_annotation_PanglaoDB")
-#'          )
-#'          }
+#' \dontrun{
+#' Celltype_annotation_PanglaoDB(seurat_obj = sce,
+#'     gene_list = Markers_list_panglaoDB,
+#'     species = "Human",
+#'     cluster_col = "seurat_clusters",
+#'     assay = "RNA",
+#'     save_path = file.path(tempdir(),"SlimR_Celltype_annotation_PanglaoDB")
+#'     colour_low = "white",
+#'     colour_high = "navy",
+#'     colour_low_mertic = "white",
+#'     colour_high_mertic = "navy",
+#'     )
+#'     }
 #'
 Celltype_annotation_PanglaoDB <- function(
     seurat_obj,
@@ -39,7 +49,11 @@ Celltype_annotation_PanglaoDB <- function(
     cluster_col = "seurat_clusters",
     assay = "RNA",
     save_path = NULL,
-    metric_names = NULL
+    metric_names = NULL,
+    colour_low = "white",
+    colour_high = "navy",
+    colour_low_mertic = "white",
+    colour_high_mertic = "navy"
 ) {
   required_packages <- c("ggplot2", "patchwork", "dplyr", "scales")
   for (pkg in required_packages) {
@@ -58,6 +72,11 @@ Celltype_annotation_PanglaoDB <- function(
     path <- file.path(tempdir(), "fallback_output")
   }
 
+  colour_low <- if (is.null(colour_low)) "white" else colour_low
+  colour_high <- if (is.null(colour_high)) "navy" else colour_high
+  colour_low_mertic <- if (is.null(colour_low_mertic)) colour_low else colour_low_mertic
+  colour_high_mertic <- if (is.null(colour_high_mertic)) colour_high else colour_high_mertic
+
   dir.create(save_path, showWarnings = FALSE, recursive = TRUE)
 
   common_theme <- function(base_size = 10) {
@@ -71,8 +90,16 @@ Celltype_annotation_PanglaoDB <- function(
       )
   }
 
-  for (cell_type in names(gene_list)) {
-    message("Processing cell type:", cell_type, "\n")
+  cell_types <- names(gene_list)
+  total <- length(cell_types)
+  cycles <- 0
+
+  message(paste0("SlimR: The input 'Markers_list' has ",total," cell types to be processed."))
+
+  for (i in seq_along(cell_types)) {
+    cell_type <- cell_types[i]
+    message(paste0("\n","[", i, "/", total, "] Processing cell type: ", cell_type))
+
     current_df <- gene_list[[cell_type]]
 
     if (ncol(current_df) < 4) {
@@ -111,7 +138,7 @@ Celltype_annotation_PanglaoDB <- function(
 
     num_clusters <- length(unique(Seurat::Idents(seurat_obj)))
     num_genes <- length(gene_order)
-    plot_height <- max(6, num_clusters * 0.5) + 2
+    plot_height <- max(6, num_clusters * 0.8) + 2
     plot_width <- max(10, num_genes * 0.4)
 
     dp <- Seurat::DotPlot(
@@ -119,7 +146,7 @@ Celltype_annotation_PanglaoDB <- function(
       features = gene_order,
       assay = assay,
       group.by = cluster_col,
-      cols = c("white", "dodgerblue")
+      cols = c(colour_low, colour_high)
     ) +
       theme(
         axis.text.x = element_text(
@@ -132,7 +159,7 @@ Celltype_annotation_PanglaoDB <- function(
         axis.title.y = element_text(family = "sans")
       ) +
       labs(
-        title = paste("Cell Type:", cell_type, "| Database: PanglaoDB | SlimR"),
+        title = paste("Cell Type:", cell_type, "| Markers_list from PanglaoDB Database | SlimR"),
         subtitle = "Dot size: Expression percentage | Color: Normalized expression level"
       )
 
@@ -158,12 +185,12 @@ Celltype_annotation_PanglaoDB <- function(
     ) +ggplot2::geom_tile(color = NA) +
       ggplot2::geom_tile(color = "white") +
       ggplot2::scale_fill_gradientn(
-        colors = c("white", "dodgerblue"),
+        colors = c(colour_low_mertic, colour_high_mertic),
         na.value = "white",
         limits = c(0, 1)
       ) +
       ggplot2::labs(
-        title = "Normalized metrics in database PanglaoDB",
+        title = "Normalized metrics in PanglaoDB database",
         x = NULL,
         y = NULL
       ) +
@@ -195,8 +222,9 @@ Celltype_annotation_PanglaoDB <- function(
       width = plot_width,
       limitsize = FALSE
     )
-    message("Combined plot saved for", cell_type, "\n\n")
+    cycles <- cycles + 1
+    message(paste0("[", i, "/", total, "] Features plot saved for: ", cell_type))
   }
-
-  message("Visualization saved to:", normalizePath(save_path))
+  message(paste0("\n","SlimR: Out of the ",total," cell types in 'Markers_list', ",cycles," cell types have been processed. You can see the reason for not processing cell types by 'warnings()'."))
+  message(paste0("\n","SlimR: Visualization saved to: ", normalizePath(save_path)))
 }

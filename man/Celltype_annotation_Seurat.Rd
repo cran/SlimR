@@ -11,7 +11,11 @@ Celltype_annotation_Seurat(
   cluster_col = "seurat_clusters",
   assay = "RNA",
   save_path = NULL,
-  metric_names = NULL
+  metric_names = NULL,
+  colour_low = "white",
+  colour_high = "navy",
+  colour_low_mertic = "white",
+  colour_high_mertic = "navy"
 )
 }
 \arguments{
@@ -27,16 +31,24 @@ gene format correction of markers entered by "Marker_list".}
 
 \item{cluster_col}{Enter annotation columns such as "seurat_cluster" in meta.data
 of the Seurat object to be annotated. Default parameters use "cluster_col =
-"seurat_clusters"".}
+'seurat_clusters'".}
 
 \item{assay}{Enter the assay used by the Seurat object, such as "RNA". Default
-parameters use "assay = "RNA"".}
+parameters use "assay = 'RNA'".}
 
-\item{save_path}{The output path of the cell annotation picture. Default parameters
-use "save_path = "./SlimR/Celltype_annotation_Seurat/"".}
+\item{save_path}{The output path of the cell annotation picture. Example parameters
+use "save_path = './SlimR/Celltype_annotation_Seurat/'".}
 
-\item{metric_names}{Warning: Do not enter information. This parameter is used to
-check if "Marker_list" conforms to the Seurat object output.}
+\item{metric_names}{Change the row name for the input mertics, not recommended unless
+necessary. (NULL is used as default parameter)}
+
+\item{colour_low}{Color for lowest expression level. (default = "white")}
+
+\item{colour_high}{Color for highest expression level. (default = "black")}
+
+\item{colour_low_mertic}{Color for lowest mertic level. (default = "white")}
+
+\item{colour_high_mertic}{Color for highest mertic level. (default = "black")}
 }
 \value{
 The cell annotation picture is saved in "save_path".
@@ -45,13 +57,25 @@ The cell annotation picture is saved in "save_path".
 Uses "marker_list" from Seurat object for cell annotation
 }
 \examples{
-\dontrun{Celltype_annotation_Seurat(seurat_obj = sce,
-         gene_list = Markers_list_Seurat,
-         species = "Human",
-         cluster_col = "seurat_clusters",
-         assay = "RNA",
-         save_path = file.path(tempdir(),"SlimR_Celltype_annotation_Seurat")
-         )
-         }
+\dontrun{
+Celltype_annotation_Seurat(seurat_obj = sce,
+    gene_list = Markers_list_Seurat,
+    species = "Human",
+    cluster_col = "seurat_clusters",
+    assay = "RNA",
+    save_path = file.path(tempdir(),"SlimR_Celltype_annotation_Seurat")
+    colour_low = "white",
+    colour_high = "navy",
+    colour_low_mertic = "white",
+    colour_high_mertic = "navy",
+    )
+    }
 
 }
+\seealso{
+Other Other_Functions_Provided_By_SlimR: 
+\code{\link{Celltype_annotation_Cellmarker2}()},
+\code{\link{Celltype_annotation_Excel}()},
+\code{\link{Celltype_annotation_PanglaoDB}()}
+}
+\concept{Other_Functions_Provided_By_SlimR}
