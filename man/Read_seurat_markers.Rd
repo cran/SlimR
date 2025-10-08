@@ -17,8 +17,10 @@ to use parameter "group.by = "Cell_type"" and "only.pos = TRUE".}
 
 \item{sources}{Type of markers sources to use. Be one of: \code{"Seurat"} or \code{"presto"}.}
 
-\item{sort_by}{Marker sorting parameter, select "avg_log2FC" or "p_val_adj" or
-"FSS" (Feature Significance Score, FSS, product value of \code{log2FC} and \verb{Expression ratio}). Default parameters use "sort_by = 'FSS'".}
+\item{sort_by}{Marker sorting parameter, for Seurat sources, select "avg_log2FC" or
+"p_val_adj" or "FSS" (Feature Significance Score, FSS, product value of \code{log2FC}
+and \verb{Expression ratio}). Default parameters use "sort_by = 'FSS'".for presto
+sources, select "logFC" or "padj" or "FSS". Default parameters use "sort_by = 'FSS'".}
 
 \item{gene_filter}{The number of markers left for each cell type based
 on the "sort_by" parameter's level of difference. Default parameters use
@@ -63,9 +65,9 @@ Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
 
 }
 \seealso{
-Other Standardized_Marker_list_Input: 
+Other Section_2_Standardized_Markers_List_Input: 
 \code{\link{Markers_filter_Cellmarker2}()},
 \code{\link{Markers_filter_PanglaoDB}()},
 \code{\link{Read_excel_markers}()}
 }
-\concept{Standardized_Marker_list_Input}
+\concept{Section_2_Standardized_Markers_List_Input}

@@ -28,7 +28,7 @@ parameters use "assay = 'RNA'".}
 
 \item{colour_low}{Color for lowest expression level. (default = "white")}
 
-\item{colour_high}{Color for highest expression level. (default = "black")}
+\item{colour_high}{Color for highest expression level. (default = "navy")}
 
 \item{annotation_col}{Character string specifying the column in meta.data to use for grouping.}
 }
@@ -54,8 +54,9 @@ Celltype_Verification(seurat_obj = sce,
 
 }
 \seealso{
-Other Automated_Annotation_Workflow: 
+Other Section_3_Automated_Annotation_Workflow: 
 \code{\link{Celltype_Annotation}()},
-\code{\link{Celltype_Calculate}()}
+\code{\link{Celltype_Calculate}()},
+\code{\link{Parameter_Calculate}()}
 }
-\concept{Automated_Annotation_Workflow}
+\concept{Section_3_Automated_Annotation_Workflow}

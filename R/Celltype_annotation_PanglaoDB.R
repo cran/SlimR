@@ -17,13 +17,13 @@
 #' @param metric_names Warning: Do not enter information. This parameter is used to
 #'     check if "Marker_list" conforms to the PanglaoDB database output.
 #' @param colour_low Color for lowest expression level. (default = "white")
-#' @param colour_high Color for highest expression level. (default = "black")
+#' @param colour_high Color for highest expression level. (default = "navy")
 #' @param colour_low_mertic Color for lowest mertic level. (default = "white")
-#' @param colour_high_mertic Color for highest mertic level. (default = "black")
+#' @param colour_high_mertic Color for highest mertic level. (default = "navy")
 #'
 #' @returns The cell annotation picture is saved in "save_path".
 #' @export
-#' @family Other_Functions_Provided_By_SlimR
+#' @family Section_5_Other_Functions_Provided_by_SlimR
 #'
 #' @importFrom dplyr all_of
 #'
@@ -223,7 +223,7 @@ Celltype_annotation_PanglaoDB <- function(
       limitsize = FALSE
     )
     cycles <- cycles + 1
-    message(paste0("[", i, "/", total, "] Features plot saved for: ", cell_type))
+    message(paste0("[", i, "/", total, "] Feature plots saved for: ", cell_type))
   }
   message(paste0("\n","SlimR: Out of the ",total," cell types in 'Markers_list', ",cycles," cell types have been processed. You can see the reason for not processing cell types by 'warnings()'."))
   message(paste0("\n","SlimR: Visualization saved to: ", normalizePath(save_path)))

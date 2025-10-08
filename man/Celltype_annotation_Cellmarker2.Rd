@@ -46,11 +46,11 @@ type. Default parameters use "min_counts = 1".}
 
 \item{colour_low}{Color for lowest expression level. (default = "white")}
 
-\item{colour_high}{Color for highest expression level. (default = "black")}
+\item{colour_high}{Color for highest expression level. (default = "navy")}
 
 \item{colour_low_mertic}{Color for lowest mertic level. (default = "white")}
 
-\item{colour_high_mertic}{Color for highest mertic level. (default = "black")}
+\item{colour_high_mertic}{Color for highest mertic level. (default = "navy")}
 }
 \value{
 The cell annotation picture is saved in "save_path".
@@ -75,9 +75,9 @@ Celltype_annotation_Cellmarker2(seurat_obj = sce,
 
 }
 \seealso{
-Other Other_Functions_Provided_By_SlimR: 
+Other Section_5_Other_Functions_Provided_by_SlimR: 
 \code{\link{Celltype_annotation_Excel}()},
 \code{\link{Celltype_annotation_PanglaoDB}()},
 \code{\link{Celltype_annotation_Seurat}()}
 }
-\concept{Other_Functions_Provided_By_SlimR}
+\concept{Section_5_Other_Functions_Provided_by_SlimR}

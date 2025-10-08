@@ -1,3 +1,11 @@
+# SlimR 1.0.8 (2025-10-08)
+
+-   This version adds the function of machine learning (e.g., 'Random Forest', 'Gradient Boosting', 'Support Vector Machine', 'Ensemble Learning') for cell types calculate parameter recognition.
+-   Optimize the data filter mode of "Markers_list_scIBD" in the package, and filter through `sort_by = "logFC"` and `gene_filter = 20` parameter.
+-   Adjust the calculation process of the 'FSS' value in the `read_seurat_markers()` function when 'resources' is set to 'presto'.
+-   Optimize the prompt output during the execution of the `Celltype_Verification()` function.
+-   Modify and optimize README and NEWS file.
+
 # SlimR 1.0.7 (2025-08-19)
 
 -   Added new function `Celltype_Verification()` for predicted cell types validation and generate the validation dotplot.

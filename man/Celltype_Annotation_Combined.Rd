@@ -39,7 +39,7 @@ use "save_path = './SlimR/Celltype_annotation_Bar/'".}
 
 \item{colour_low}{Color for lowest expression level. (default = "white")}
 
-\item{colour_high}{Color for highest expression level. (default = "black")}
+\item{colour_high}{Color for highest expression level. (default = "navy")}
 }
 \value{
 The cell annotation picture is saved in "save_path".
@@ -62,8 +62,8 @@ Celltype_Annotation_Combined(seurat_obj = sce,
 
 }
 \seealso{
-Other Semi_Automated_Annotation_Workflow: 
+Other Section_4_Semi_Automated_Annotation_Workflow: 
 \code{\link{Celltype_Annotation_Features}()},
 \code{\link{Celltype_Annotation_Heatmap}()}
 }
-\concept{Semi_Automated_Annotation_Workflow}
+\concept{Section_4_Semi_Automated_Annotation_Workflow}
