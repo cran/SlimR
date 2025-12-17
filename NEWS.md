@@ -1,16 +1,22 @@
+# SlimR 1.0.9 (2025-11-27)
+-   This version incorporates the T Cell Markers database PCTIT, with the data sourced from the article "Pan-cancer single cell landscape of tumor-infiltrating T cells". The reference literature is: L. Zheng et al. (2021) <doi:10.1126/science.abe6474>.
+-   This version incorporates the Macrophage Markers database PCTAM, with the data sourced from the article "Macrophage diversity in cancer revisited in the era of single-cell omics". The reference literature is: Ruo-Yu Ma et al. (2022) <doi:10.1016/j.it.2022.04.008>.
+-   Added a 'has_colnames' parameter to 'Read_excel_markers()' function to support reading Excel files without column headers by automatically naming the first column as "Markers".
+-   Modify and optimize the README and NEWS files.
+
 # SlimR 1.0.8 (2025-10-08)
 
--   This version adds the function of machine learning (e.g., 'Random Forest', 'Gradient Boosting', 'Support Vector Machine', 'Ensemble Learning') for cell types calculate parameter recognition.
+-   This version adds the function of machine learning (e.g., 'Random Forest', 'Gradient Boosting', 'Support Vector Machine', 'Ensemble Learning') for cell types probability calculation parameter recognition.
 -   Optimize the data filter mode of "Markers_list_scIBD" in the package, and filter through `sort_by = "logFC"` and `gene_filter = 20` parameter.
 -   Adjust the calculation process of the 'FSS' value in the `read_seurat_markers()` function when 'resources' is set to 'presto'.
 -   Optimize the prompt output during the execution of the `Celltype_Verification()` function.
--   Modify and optimize README and NEWS file.
+-   Modify and optimize the README and NEWS files.
 
 # SlimR 1.0.7 (2025-08-19)
 
--   Added new function `Celltype_Verification()` for predicted cell types validation and generate the validation dotplot.
--   Optimize the function 'Read_seurat_markers()'. This is compatible with the 'presto::wilcoxauc()' source tag, and the 'Feature Significance Score' (FSS, product value of `log2FC` and `Expression ratio`) can be calculated and sorted accordingly.
--   Add custom color parameters `colour_low` and `colour_high` to all ploting output functions.
+-   Added new function `Celltype_Verification()` for predicted cell types validation and generated the validation dotplot.
+-   Optimize the function 'Read_seurat_markers()', which is compatible with the 'presto::wilcoxauc()' source tag, and the 'Feature Significance Score' (FSS, which is the product of `log2FC` and `Expression ratio`) can be calculated and sorted accordingly.
+-   Add custom color parameters `colour_low` and `colour_high` to all plotting output functions.
 -   Renamed `Celltype_annotation_Dotplot()` to `Celltype_Annotation_Features()`, `Celltype_annotation_Box()` to `Celltype_Annotation_Combined()`, `read_seurat_markers()` to `Read_seurat_markers()`, `read_excel_markers()` to `Read_excel_markers()` for unified function naming structure.
 -   Enhanced README with detailed process descriptions.
 -   Optimized message output system for cleaner console feedback.
@@ -23,7 +29,7 @@
 -   Added AUC calculation and visualization to `Celltype_Calculate()`.
 -   Implemented AUC-based prediction correction in cell typing.
 -   Streamlined code output formatting.
--   Fixed critical bugs in prediction pipeline.
+-   Fixed critical bugs in the prediction pipeline.
 -   Modified code to meet CRAN submission requirements.
 
 # SlimR 1.0.5 (2025-08-05)
@@ -53,4 +59,4 @@
 
 # SlimR 1.0.0 (2025-07-07)
 
--   Initial release of SlimR package with core cell type annotation framework and basic visualization functions.
+-   Initial release of the SlimR package with the core cell type annotation framework and basic visualization functions.

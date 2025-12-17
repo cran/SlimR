@@ -3,7 +3,7 @@
 \docType{data}
 \name{Markers_list_scIBD}
 \alias{Markers_list_scIBD}
-\title{List of cell type markers in the scIBD dataset}
+\title{List of cell type markers in the article scIBD}
 \format{
 A list with one hundred and one tables.
 }
@@ -28,6 +28,8 @@ Other Section_0_Database:
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},
+\code{\link{Markers_list_PCTAM}},
+\code{\link{Markers_list_PCTIT}},
 \code{\link{Markers_list_TCellSI}},
 \code{\link{PanglaoDB}},
 \code{\link{PanglaoDB_raw}},
