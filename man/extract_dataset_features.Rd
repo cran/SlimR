@@ -2,7 +2,7 @@
 % Please edit documentation in R/Probability_parameter.R
 \name{extract_dataset_features}
 \alias{extract_dataset_features}
-\title{Extract Dataset Characteristics for Machine Learning (Use in package)}
+\title{Extract Dataset Characteristics for Adaptive Parameter Calculation (Use in package)}
 \usage{
 extract_dataset_features(
   seurat_obj,
@@ -34,10 +34,7 @@ Other Section_1_Functions_Use_in_Package:
 \code{\link{calculate_expression}()},
 \code{\link{calculate_expression_skewness}()},
 \code{\link{calculate_probability}()},
-\code{\link{estimate_batch_effect}()},
-\code{\link{generate_training_data}()},
-\code{\link{postprocess_parameters}()},
-\code{\link{predict_optimal_parameters}()},
-\code{\link{train_parameter_model}()}
+\code{\link{compute_adaptive_parameters}()},
+\code{\link{estimate_batch_effect}()}
 }
 \concept{Section_1_Functions_Use_in_Package}

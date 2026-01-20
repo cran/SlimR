@@ -1,6 +1,6 @@
-# SlimR: Machine Learning-Assisted, Marker-Based Tool for Single-Cell and Spatial Transcriptomics Annotation
+# SlimR: Adaptive Machine Learning-Powered, Context-Matching Tool for Single-Cell and Spatial Transcriptomics Annotation
 
-[![CRAN Package Version](https://img.shields.io/cran/v/SlimR?label=CRAN)](https://cran.r-project.org/package=SlimR) [![CRAN License](https://img.shields.io/cran/l/SlimR?label=License&color=green)](https://cran.r-project.org/package=SlimR) [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/SlimR)](https://cran.r-project.org/package=SlimR) [![GitHub Package Version](https://img.shields.io/github/r-package/v/Zhaoqing-wang/SlimR?label=GitHub&color=green)](https://github.com/Zhaoqing-wang/SlimR/releases) [![GitHub Maintainer](https://img.shields.io/badge/Maintainer-Zhaoqing_Wang-blue)](https://github.com/Zhaoqing-wang)
+[![CRAN Package Version](https://img.shields.io/cran/v/SlimR?label=CRAN)](https://cran.r-project.org/package=SlimR) [![CRAN License](https://img.shields.io/cran/l/SlimR?label=License&color=green)](https://cran.r-project.org/package=SlimR) [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/SlimR)](https://cran.r-project.org/package=SlimR) [![GitHub Package Version](https://img.shields.io/github/r-package/v/zhaoqing-wang/SlimR?label=GitHub&color=green)](https://github.com/zhaoqing-wang/SlimR/releases) [![GitHub Maintainer](https://img.shields.io/badge/Maintainer-Zhaoqing_Wang-blue)](https://github.com/zhaoqing-wang)
 
 ## Overview
 
@@ -8,7 +8,7 @@
 
 SlimR is an R package designed for annotating single-cell and spatial-transcriptomics (ST) datasets. It supports the creation of a unified marker list, `Markers_list`, using sources including: the package's built-in curated species-specific cell type and marker reference databases (e.g., 'Cellmarker2', 'PanglaoDB', 'scIBD', 'TCellSI','PCTIT','PCTAM'), Seurat objects containing cell label information, or user-provided Excel tables mapping cell types to markers.
 
-SlimR can predict calculation parameters by machine learning algorithms (e.g., 'Random Forest', 'Gradient Boosting', 'Support Vector Machine', 'Ensemble Learning') by `Parameter_Calculate()`, and based on `Markers_list`, calculate gene expression of different cell types and predict annotation information and calculate corresponding AUC by `Celltype_Calculate()`, and annotate it by `Celltype_Annotation()`, then verify it by `Celltype_Verification()`. At the same time, it can calculate gene expression corresponding to the cell type to generate a reference map for manual annotation (e.g., 'Heat Map', 'Feature Plots', 'Combined Plots').
+SlimR can predict calculation parameters by adaptive machine learning algorithms by `Parameter_Calculate()`, and based on `Markers_list`, calculate gene expression of different cell types and predict annotation information and calculate corresponding AUC by `Celltype_Calculate()`, and annotate it by `Celltype_Annotation()`, then verify it by `Celltype_Verification()`. At the same time, it can calculate gene expression corresponding to the cell type to generate a reference map for manual annotation (e.g., 'Heat Map', 'Feature Plots', 'Combined Plots').
 
 ## Table of Contents
 
@@ -24,8 +24,8 @@ SlimR can predict calculation parameters by machine learning algorithms (e.g., '
     -   [2.4 From Excel Tables](#24-from-excel-tables)
     -   [2.5 Example: From Article scIBD](#25-example-from-article-scibd)
     -   [2.6 Example: From Tool TCellSI](#26-example-from-tool-tcellsi)
-    -   [2.7 Example: From Atlas of Pan Cancer T Cells](#27-example-from-atlas-of-pan-cancer-t-cell)
-    -   [2.8 Example: From Review of Pan Cancer Macrophages](#28-example-from-review-of-pan-cancer-macrophage)
+    -   [2.7 Example: From Atlas of Pan Cancer T Cells](#27-example-from-atlas-of-pan-cancer-t-cells)
+    -   [2.8 Example: From Review of Pan Cancer Macrophages](#28-example-from-review-of-pan-cancer-macrophages)
 3.  [Automated Annotation Workflow](#3-automated-annotation-workflow)
     -   [3.1 Calculate Parameter](#31-calculate-parameter)
     -   [3.2 Calculate Cell Types](#32-calculate-cell-types)
@@ -54,12 +54,12 @@ install.packages("SlimR")
 
 *Note: Try adjusting the CRAN image to `Global (CDN)` or use `BiocManager::install("SlimR")` if you encounter a version mismatch during installation.*
 
-Option Two: [![GitHub R package version](https://img.shields.io/github/r-package/v/Zhaoqing-wang/SlimR?label=GitHub&color=green)](https://github.com/Zhaoqing-wang/SlimR/releases)
+Option Two: [![GitHub R package version](https://img.shields.io/github/r-package/v/zhaoqing-wang/SlimR?label=GitHub&color=green)](https://github.com/zhaoqing-wang/SlimR/releases)
 
 Install SlimR directly from GitHub using: (Development version, recommended when the version is higher than the CRAN package version)
 
 ``` r
-devtools::install_github("Zhaoqing-wang/SlimR")
+devtools::install_github("zhaoqing-wang/SlimR")
 ```
 
 *Note: If the function doesn't work, please run `install.packages('devtools')` first.*
@@ -305,36 +305,29 @@ Markers_list_PCTAM <- SlimR::Markers_list_PCTAM
 
 ### 3.1 Calculate Parameter
 
-SlimR integrates multiple machine learning algorithms (e.g., Random Forest, Gradient Boosting, Support Vector Machine, and Ensemble Learning) to automatically determine the optimal `min_expression` and `specificity_weight` parameters in Section 3.2 for calculating the probability of cell types.
+SlimR integrates adaptive machine learning algorithms to automatically determine the optimal `min_expression` and `specificity_weight` parameters in Section 3.2 for calculating the probability of cell types.
 
 ``` r
 # Basic usage uses default genes
 SlimR_params <- Parameter_Calculate(
-   seurat_obj = sce,
-   features = c("CD3E", "CD4", "CD8A"),
-   assay = "RNA",
-   cluster_col = "seurat_clusters",
-   method = "ensemble",
-   n_models = 3,
-   return_model = FALSE,
-   verbose = TRUE
-   )
+  seurat_obj = sce,
+  features = c("CD3E", "CD4", "CD8A"),
+  assay = "RNA",
+  cluster_col = "seurat_clusters",
+  verbose = TRUE
+  )
  
  # Use with custom method: use the genes corresponding to a specific cell type in 'Markers_list' as input
-SlimR_params <- Parameter_Calculate(
-   seurat_obj = sce,
-   features = unique(Markers_list_Cellmarker2$`B cell`$marker),
-   assay = "RNA",
-   cluster_col = "seurat_clusters",
-   method = "rf",
-   return_model = FALSE,
-   verbose = TRUE
-   )
+ SlimR_params <- Parameter_Calculate(
+  seurat_obj = sce,
+  features = unique(Markers_list_Cellmarker2$`B cell`$marker),
+  assay = "RNA",
+  cluster_col = "seurat_clusters",
+  verbose = TRUE
+  )
 ```
 
 **Important: This scheme is optional and can be skipped to section 3.2 for cell type probability calculation using default parameters.**
-
-*Note: Using the parameter `method = "rf"` in the function `Parameter_Calculate ()` can modify the machine learning model used.Machine learning method: `rf` (Random Forest), `gbm` (Gradient Boosting), `svm` (Support Vector Machine), or `ensemble` (Ensemble Learning; default)*
 
 ### 3.2 Calculate Cell Types
 
@@ -350,7 +343,7 @@ SlimR_anno_result <- Celltype_Calculate(seurat_obj = sce,
     assay = "RNA",
     min_expression = 0.1,
     specificity_weight = 3,
-    threshold = 0.8,
+    threshold = 0.6,
     compute_AUC = TRUE,
     plot_AUC = TRUE,
     AUC_correction = TRUE,
@@ -359,7 +352,7 @@ SlimR_anno_result <- Celltype_Calculate(seurat_obj = sce,
     )
 ```
 
-You can use the `min_expression = SlimR_params$min_expression` and `specificity_weight = SlimR_params$specificity_weight` parameters in the function `Celltype_Calculate()` if you have run the `Parameter_Calculate ()` function in section 3.1 above.
+You can use the `min_expression = SlimR_params$min_expression` and `specificity_weight = SlimR_params$specificity_weight` and `threshold = SlimR_params$threshold` parameters in the function `Celltype_Calculate()` if you have run the `Parameter_Calculate ()` function in section 3.1 above.
 
 **Important: The parameter `cluster_col` in the function `Celltype_Calculate()` and the function `Celltype_Annotation()` must be strictly the same to avoid false matches.**
 
