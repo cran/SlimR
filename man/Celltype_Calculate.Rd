@@ -15,7 +15,7 @@ Celltype_Calculate(
   threshold = 0.6,
   compute_AUC = TRUE,
   plot_AUC = TRUE,
-  AUC_correction = TRUE,
+  AUC_correction = FALSE,
   colour_low = "navy",
   colour_high = "firebrick3"
 )
@@ -61,7 +61,7 @@ others. When TRUE, adds an AUC column to the prediction results. (default: TRUE)
 \item{plot_AUC}{The logic indicates whether to draw an AUC curve for the predicted cell
 type. When TRUE, add an AUC_plot to result. (default: TRUE)}
 
-\item{AUC_correction}{Logical value controlling AUC-based correction. (default = TRUE)
+\item{AUC_correction}{Logical value controlling AUC-based correction. (default = FALSE)
 When set to TRUE:
 1.Computes AUC values for candidate cell types. (probability > threshold)
 2.Selects the cell type with the highest AUC as the final predicted type.
@@ -87,8 +87,9 @@ A list containing:
 \item AUC: Area Under the Curve value (when compute_AUC = TRUE)
 \item Alternative_cell_types: Semi-colon separated alternative cell types
 }
-\item Heatmap_plot: Heatmap visualization of probability matrix
-\item AUC_plot: AUC visualization of Predicted cell type
+\item Heatmap_plot: Heatmap visualization of probability matrix (pheatmap object).
+Can be displayed using \code{print()} or \code{plot()}
+\item AUC_plot: AUC visualization of Predicted cell type (ggplot object)
 \item AUC_list: The resulting list of AUC values calculated for genes in alternative cell types above the approximate threshold
 }
 }
@@ -107,7 +108,7 @@ SlimR_anno_result <- Celltype_Calculate(seurat_obj = sce,
     threshold = 0.6,
     compute_AUC = TRUE,
     plot_AUC = TRUE,
-    AUC_correction = TRUE,
+    AUC_correction = FALSE,
     colour_low = "navy",
     colour_high = "firebrick3"
     )
@@ -117,7 +118,11 @@ SlimR_anno_result <- Celltype_Calculate(seurat_obj = sce,
 \seealso{
 Other Section_3_Automated_Annotation: 
 \code{\link{Celltype_Annotation}()},
+\code{\link{Celltype_Annotation_PerCell}()},
+\code{\link{Celltype_Calculate_PerCell}()},
 \code{\link{Celltype_Verification}()},
-\code{\link{Parameter_Calculate}()}
+\code{\link{Celltype_Verification_PerCell}()},
+\code{\link{Parameter_Calculate}()},
+\code{\link{percell_workflow}}
 }
 \concept{Section_3_Automated_Annotation}

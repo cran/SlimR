@@ -1,68 +1,120 @@
-# SlimR 1.1.0 (2026-01-20)
--   This version optimizes the AUC calculation in Celltype_Calculate () to be more robust by test all gene AUCs instead of average gene expression AUCs in the previous version.
--   The machine learning algorithm in the Parameter_Calculate() function is optimized to be adaptive machine learning to improve the generalization ability of the model.
--   Add prediction to the Parameter_Calculate() function for the threshold parameter used by the Celltype_Calculate () function.
--   Modify and optimize the README and NEWS files.
+## Version 1.1.1 (2026-02-05)
 
-# SlimR 1.0.9 (2025-12-18)
--   This version incorporates the T Cell Markers database PCTIT, with the data sourced from the article "Pan-cancer single cell landscape of tumor-infiltrating T cells". The reference literature is: L. Zheng et al. (2021) <doi:10.1126/science.abe6474>.
--   This version incorporates the Macrophage Markers database PCTAM, with the data sourced from the article "Macrophage diversity in cancer revisited in the era of single-cell omics". The reference literature is: Ruo-Yu Ma et al. (2022) <doi:10.1016/j.it.2022.04.008>.
--   Added a 'has_colnames' parameter to 'Read_excel_markers()' function to support reading Excel files without column headers by automatically naming the first column as "Markers".
--   Modify and optimize the README and NEWS files.
+This release introduces a major new feature for fine-grained cell type identification alongside significant improvements to accuracy, performance, and usability.
 
-# SlimR 1.0.8 (2025-10-08)
+*   **New Feature: Per-Cell Annotation System**
+    *   Added a new workflow for annotating individual cells, complementing the existing cluster-based approach.
+    *   Offers three scoring methods: `weighted` (default), `mean`, and `AUCell`.
+    *   Includes optional UMAP-based spatial smoothing to improve annotation consistency.
 
--   This version adds the function of machine learning (e.g., 'Random Forest', 'Gradient Boosting', 'Support Vector Machine', 'Ensemble Learning') for cell types probability calculation parameter recognition.
--   Optimize the data filter mode of "Markers_list_scIBD" in the package, and filter through `sort_by = "logFC"` and `gene_filter = 20` parameter.
--   Adjust the calculation process of the 'FSS' value in the `read_seurat_markers()` function when 'resources' is set to 'presto'.
--   Optimize the prompt output during the execution of the `Celltype_Verification()` function.
--   Modify and optimize the README and NEWS files.
+*   **Major Improvements to Per-Cell Annotation**
+    *   Introduced an adaptive `min_score = "auto"` threshold that scales with the number of cell types, preventing excessive "Unassigned" labels in large marker sets (e.g., 30+ types).
+    *   Added a new `min_confidence` parameter for ratio-based filtering, providing more robust cell type discrimination than simple score differences.
+    *   Enhanced the `weighted` scoring method with new marker specificity and IDF-like weights.
+    *   Improved the `AUCell` method with adaptive `n_top` calculation and a combined binary/rank-weighted scoring strategy.
+    *   Annotation results now include a `Raw_score_matrix` and a `Parameters` list for better reproducibility and debugging.
 
-# SlimR 1.0.7 (2025-08-19)
+*   **Performance & Stability**
+    *   Optimized for large datasets with vectorized operations and memory-efficient processing.
+    *   Integrated the `RANN` package for optional 10-100x faster k-NN computations in spatial smoothing.
+    *   Added comprehensive validation and error handling in core functions like `compute_adaptive_parameters()`.
 
--   Added new function `Celltype_Verification()` for predicted cell types validation and generated the validation dotplot.
--   Optimize the function 'Read_seurat_markers()', which is compatible with the 'presto::wilcoxauc()' source tag, and the 'Feature Significance Score' (FSS, which is the product of `log2FC` and `Expression ratio`) can be calculated and sorted accordingly.
--   Add custom color parameters `colour_low` and `colour_high` to all plotting output functions.
--   Renamed `Celltype_annotation_Dotplot()` to `Celltype_Annotation_Features()`, `Celltype_annotation_Box()` to `Celltype_Annotation_Combined()`, `read_seurat_markers()` to `Read_seurat_markers()`, `read_excel_markers()` to `Read_excel_markers()` for unified function naming structure.
--   Enhanced README with detailed process descriptions.
--   Optimized message output system for cleaner console feedback.
--   Resolved various code bugs reported by users.
--   Modified codebase to meet CRAN standards and policies.
+*   **Testing & Documentation**
+    *   Added a comprehensive test suite with 147 tests covering core functionality, NA handling, and workflows.
+    *   Reorganized documentation and README with clearer distinctions between cluster-based and per-cell annotation.
 
-# SlimR 1.0.6 (2025-08-06)
+## Version 1.1.0 (2026-01-20)
 
--   Integrated "scIBD" human intestine reference database.
--   Added AUC calculation and visualization to `Celltype_Calculate()`.
--   Implemented AUC-based prediction correction in cell typing.
--   Streamlined code output formatting.
--   Fixed critical bugs in the prediction pipeline.
--   Modified code to meet CRAN submission requirements.
+*   **Improvements**
+    *   Optimized AUC calculation in `Celltype_Calculate()` to use individual gene AUCs for more robust predictions.
+    *   Enhanced the adaptive machine learning algorithm in `Parameter_Calculate()` for better model generalization.
+    *   Extended `Parameter_Calculate()` to include threshold parameter prediction.
+    *   Updated general documentation and README structure.
 
-# SlimR 1.0.5 (2025-08-05)
+## Version 1.0.9 (2025-12-18)
 
--   Added "TCellSI" T-cell reference database.
--   Introduced `Celltype_Calculate()` for automated scoring.
--   Added `Celltype_Annotation()` for end-to-end cell typing.
--   Improved message output system.
--   Resolved multiple code errors.
--   Modified code to meet CRAN standards and policies.
+*   **New Features**
+    *   Integrated two new pan-cancer immune cell reference databases:
+        *   **PCTIT:** Pan-cancer T cell markers.
+        *   **PCTAM:** Pan-cancer macrophage markers.
 
-# SlimR 1.0.4 (2025-07-30)
+*   **Improvements**
+    *   Added a `has_colnames` parameter to `Read_excel_markers()` to support reading Excel files without column headers.
+    *   Updated documentation.
 
--   Optimized `Celltype_annotation_Heatmap()` performance.
--   Enhanced probability calculation in `calculate_probability()`.
--   Modified code to meet CRAN submission requirements.
--   Change the License type from "GPL-3" to "MIT".
+## Version 1.0.8 (2025-10-08)
 
-# SlimR 1.0.3 (2025-07-28)
+*   **New Features**
+    *   Implemented machine learning-based parameter recognition using Random Forest, Gradient Boosting, SVM, and an Ensemble learner.
 
--   Replaced `calculate_mean_expression()` with `calculate_probability()` in `Celltype_annotation_Heatmap()`.
--   Modified code to meet CRAN standards and policies.
+*   **Improvements**
+    *   Optimized data filtering for the `Markers_list_scIBD` database.
+    *   Enhanced FSS (Fraction of Samples Significant) calculation in `Read_seurat_markers()` for outputs from the `presto` package.
+    *   Improved console output formatting in `Celltype_Verification()`.
 
-# SlimR 1.0.1 (2025-07-19)
+## Version 1.0.7 (2025-08-19)
 
--   Changed `Celltype_annotation_Bar()` to `Celltype_annotation_Box()` with improved visualization capabilities.
+*   **New Features**
+    *   Added the `Celltype_Verification()` function for generating validation dot plots.
+    *   Introduced custom color parameters (`colour_low`, `colour_high`) for all plotting functions.
 
-# SlimR 1.0.0 (2025-07-07)
+*   **Improvements**
+    *   Enhanced `Read_seurat_markers()` with better compatibility for `FindMarkers` results from the `presto` package.
+    *   Standardized function names across the package for consistency.
+    *   Improved the internal messaging system for clearer user feedback.
+    *   General updates for CRAN compliance.
 
--   Initial release of the SlimR package with the core cell type annotation framework and basic visualization functions.
+*   **Bug Fixes**
+    *   Resolved various user-reported issues.
+
+## Version 1.0.6 (2025-08-06)
+
+*   **New Features**
+    *   Integrated the scIBD human intestine cell reference database.
+    *   Added AUC (Area Under the Curve) calculation and visualization to the `Celltype_Calculate()` function.
+    *   Implemented AUC-based prediction correction.
+
+*   **Improvements**
+    *   Streamlined the formatting of function outputs.
+    *   General updates for CRAN compliance.
+
+*   **Bug Fixes**
+    *   Fixed critical bugs in the core prediction pipeline.
+
+## Version 1.0.5 (2025-08-05)
+
+*   **New Features**
+    *   Added the TCellSI T-cell reference database.
+    *   Introduced the `Celltype_Calculate()` function for automated cluster scoring.
+    *   Introduced the `Celltype_Annotation()` function for an end-to-end annotation workflow.
+
+*   **Improvements**
+    *   Enhanced the console message output system.
+    *   General updates for CRAN compliance.
+
+*   **Bug Fixes**
+    *   Resolved multiple code errors.
+
+## Version 1.0.4 (2025-07-30)
+
+*   **Improvements**
+    *   Optimized the performance of the `Celltype_annotation_Heatmap()` function.
+    *   Enhanced the probability calculation in the helper function `calculate_probability()`.
+    *   Changed the package license from GPL-3 to MIT.
+    *   General updates for CRAN compliance.
+
+## Version 1.0.3 (2025-07-28)
+
+*   **Improvements**
+    *   Updated `Celltype_annotation_Heatmap()` to use the new `calculate_probability()` function.
+    *   General updates for CRAN compliance.
+
+## Version 1.0.1 (2025-07-19)
+
+*   **Changes**
+    *   Renamed `Celltype_annotation_Bar()` to `Celltype_annotation_Box()` and improved its visualization output.
+
+## Version 1.0.0 (2025-07-07)
+
+*   Initial release on CRAN.
+*   Provides the core framework for cluster-based cell type annotation and visualization.

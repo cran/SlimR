@@ -167,7 +167,7 @@ extract_dataset_features <- function(seurat_obj, features, assay = NULL, cluster
   }))
   
   # Signal-to-noise ratio
-  snr <- if (within_var > 0) between_var / within_var else between_var
+  snr <- if (!is.na(within_var) && within_var > 0) between_var / within_var else between_var
   
   # Calculate expression dynamic range
   dynamic_range <- log10(max(nonzero_expr) / (min(nonzero_expr) + 1e-10) + 1)
@@ -266,8 +266,10 @@ calculate_cluster_variability <- function(data.features, features) {
 #' 
 calculate_expression_skewness <- function(expression_matrix) {
   skew_vals <- apply(expression_matrix, 2, function(x) {
-    if (stats::sd(x) == 0) return(0)
-    mean((x - mean(x))^3) / (stats::sd(x)^3)  # Fisher-Pearson coefficient of skewness
+    sd_val <- stats::sd(x, na.rm = TRUE)
+    if (is.na(sd_val) || sd_val == 0) return(0)
+    m <- mean(x, na.rm = TRUE)
+    mean((x - m)^3, na.rm = TRUE) / (sd_val^3)  # Fisher-Pearson coefficient of skewness
   })
   return(mean(abs(skew_vals), na.rm = TRUE))
 }
@@ -342,31 +344,39 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
     
     # Higher sparsity -> use lower quantile; lower sparsity -> use higher quantile
     sparsity_weight <- (sparsity - 0.5) / 0.5  # Normalize to [-1, 1] range
-    sparsity_weight <- max(-1, min(1, sparsity_weight))
+    sparsity_weight <- max(-1, min(1, sparsity_weight), na.rm = TRUE)
     
-    if (sparsity_weight > 0) {
+    if (is.na(sparsity_weight) || sparsity_weight > 0) {
       # High sparsity: interpolate between q05 and q10
-      base_min_expr <- q05 + (q10 - q05) * (1 - sparsity_weight)
+      base_min_expr <- q05 + (q10 - q05) * (1 - ifelse(is.na(sparsity_weight), 0, sparsity_weight))
     } else {
       # Low sparsity: interpolate between q10 and q20
       base_min_expr <- q10 + (q20 - q10) * (-sparsity_weight)
     }
   } else {
     # Fallback: use mean expression scaled by sparsity
-    base_min_expr <- mean_expr * (0.3 - 0.2 * sparsity)
+    if (!is.na(sparsity)) {
+      base_min_expr <- mean_expr * (0.3 - 0.2 * sparsity)
+    } else {
+      base_min_expr <- mean_expr * 0.3  # Default if sparsity unknown
+    }
   }
   
   # Ensure positive base value
-  base_min_expr <- max(0.01, base_min_expr)
+  base_min_expr <- max(0.01, base_min_expr, na.rm = TRUE)
   
   # Adjustment 1: Skewness correction (continuous)
   # High skewness indicates long-tail distribution, need lower threshold
-  skewness_factor <- 1 - 0.05 * log1p(skewness)  # Logarithmic dampening
-  skewness_factor <- max(0.7, min(1.2, skewness_factor))
+  if (!is.na(skewness)) {
+    skewness_factor <- 1 - 0.05 * log1p(skewness)  # Logarithmic dampening
+    skewness_factor <- max(0.7, min(1.2, skewness_factor))
+  } else {
+    skewness_factor <- 1  # Neutral factor
+  }
   
   # Adjustment 2: Dynamic range correction
   # Large dynamic range suggests need for relative rather than absolute threshold
-  if (!is.null(dynamic_range) && dynamic_range > 3) {
+  if (!is.null(dynamic_range) && !is.na(dynamic_range) && dynamic_range > 3) {
     range_factor <- 1 - 0.08 * (dynamic_range - 3)
     range_factor <- max(0.6, range_factor)
   } else {
@@ -375,7 +385,7 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   
   # Adjustment 3: Detection rate consideration
   # Low detection rate across clusters needs lower threshold
-  if (!is.null(detection_rate)) {
+  if (!is.null(detection_rate) && !is.na(detection_rate)) {
     detection_factor <- 0.7 + 0.6 * detection_rate  # Range: [0.7, 1.3]
   } else {
     detection_factor <- 1
@@ -383,10 +393,14 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   
   # Adjustment 4: Gene-level mean distribution
   # If most genes have low mean expression, lower the threshold
-  if (!is.null(gene_mean_dist)) {
+  if (!is.null(gene_mean_dist) && !is.na(gene_mean_dist["50%"])) {
     median_gene_mean <- gene_mean_dist["50%"]
-    gene_factor <- sqrt(median_gene_mean / (mean_expr + 1e-6))
-    gene_factor <- max(0.5, min(1.5, gene_factor))
+    if (!is.na(median_gene_mean) && !is.na(mean_expr)) {
+      gene_factor <- sqrt(median_gene_mean / (mean_expr + 1e-6))
+      gene_factor <- max(0.5, min(1.5, gene_factor))
+    } else {
+      gene_factor <- 1
+    }
   } else {
     gene_factor <- 1
   }
@@ -409,7 +423,7 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   # ============================================================================
   
   # Base weight from signal-to-noise ratio
-  if (!is.null(snr) && snr > 0) {
+  if (!is.null(snr) && !is.na(snr) && snr > 0) {
     # Higher SNR -> lower weight needed (clusters already well-separated)
     # Use inverse relationship with logarithmic scaling
     base_weight <- 6 - 2 * log1p(snr)
@@ -422,8 +436,12 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   
   # Adjustment 1: CV-based fine-tuning (continuous)
   # Higher CV means genes are more variable -> can rely more on expression patterns
-  cv_factor <- 1.3 - 0.15 * cv
-  cv_factor <- max(0.7, min(1.3, cv_factor))
+  if (!is.na(cv)) {
+    cv_factor <- 1.3 - 0.15 * cv
+    cv_factor <- max(0.7, min(1.3, cv_factor))
+  } else {
+    cv_factor <- 1  # Neutral factor
+  }
   
   # Adjustment 2: Number of clusters scaling
   # More clusters -> slightly higher weight to improve discrimination
@@ -432,9 +450,9 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   
   # Adjustment 3: Sparsity interaction
   # Very high sparsity datasets need different weighting strategy
-  if (sparsity > 0.9) {
+  if (!is.na(sparsity) && sparsity > 0.9) {
     sparsity_adj <- 1 + 0.5 * (sparsity - 0.9) / 0.1
-  } else if (sparsity < 0.5) {
+  } else if (!is.na(sparsity) && sparsity < 0.5) {
     sparsity_adj <- 1 - 0.2 * (0.5 - sparsity) / 0.5
   } else {
     sparsity_adj <- 1
@@ -451,7 +469,7 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   
   rationale_parts <- c(rationale_parts,
                        sprintf("weight base=%.1f (SNR=%.2f)", base_weight, 
-                               ifelse(!is.null(snr), snr, cluster_var)))
+                               ifelse(!is.null(snr) && !is.na(snr), snr, cluster_var)))
   
   # ============================================================================
   # PART 3: threshold - Adaptive Calculation for Candidate Selection
@@ -468,7 +486,7 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   
   # Factor 1: Cluster quality (SNR-based)
   # Poor separation -> need more candidates to ensure coverage
-  if (!is.null(snr) && snr > 0) {
+  if (!is.null(snr) && !is.na(snr) && snr > 0) {
     # SNR typically ranges 0.1-5; transform to contribution
     snr_contrib <- 0.1 * tanh(snr)  # Saturates around ±0.1
   } else {
@@ -487,13 +505,21 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   
   # Factor 4: Expression characteristics
   # High sparsity makes probability estimates less reliable -> lower threshold
-  sparsity_contrib <- -0.1 * (sparsity - 0.7)  # 0.7 as typical value
-  sparsity_contrib <- max(-0.08, min(0.08, sparsity_contrib))
+  if (!is.na(sparsity)) {
+    sparsity_contrib <- -0.1 * (sparsity - 0.7)  # 0.7 as typical value
+    sparsity_contrib <- max(-0.08, min(0.08, sparsity_contrib))
+  } else {
+    sparsity_contrib <- 0  # Neutral contribution
+  }
   
   # Factor 5: Gene variability
   # High CV -> markers more distinctive -> can use higher threshold
-  cv_contrib <- 0.03 * (cv - 1.5)
-  cv_contrib <- max(-0.05, min(0.08, cv_contrib))
+  if (!is.na(cv)) {
+    cv_contrib <- 0.03 * (cv - 1.5)
+    cv_contrib <- max(-0.05, min(0.08, cv_contrib))
+  } else {
+    cv_contrib <- 0  # Neutral contribution
+  }
   
   # Combine: start from 0.70 as neutral baseline
   threshold <- 0.70 + snr_contrib + celltype_contrib + cluster_contrib + 
