@@ -1,14 +1,14 @@
-1c4d6c425724015d82a8258b03469914 *DESCRIPTION
+4d801521f26f174f841644df6d7a90bd *DESCRIPTION
 3f844d097a257470b1861afd31cd61fb *LICENSE
-4c81bafa56bbfc1b42caa43069eead94 *NAMESPACE
-3ee21b3026b7c1749e9ef464f82c5dfc *NEWS.md
+88a51cdf83208bfbcaae1de2c2657932 *NAMESPACE
+5cc2ecd21b1c0174d766dc25a6f59a70 *NEWS.md
 bb309d7cebfd1f6407e549caff4e7ed2 *R/Celltype_Annotation.R
 6fa49c3ac85626e8ff78b841d986e782 *R/Celltype_Annotation_Combined.R
 88a01776f8255c8a7394166f46a8cf1f *R/Celltype_Annotation_Features.R
 af73f2b963033439735d53815757f699 *R/Celltype_Annotation_Heatmap.R
 5f0f50e37166f0dd6565c2f76e03b72c *R/Celltype_Annotation_PerCell.R
-8ba1ef838b01d6e0b15801c533f8fc11 *R/Celltype_Calculate.R
-79e633dda0ef2803c939e2b9c3883dda *R/Celltype_Calculate_PerCell.R
+df79d69b359899f34d85ebcfbb8d1384 *R/Celltype_Calculate.R
+421a7580a194bcae729abfb8bd7c2dc3 *R/Celltype_Calculate_PerCell.R
 a469184f07bf8a9e8a932f7e2425c938 *R/Celltype_Verification.R
 70818b083878d4ea005185c2ab541c36 *R/Celltype_Verification_PerCell.R
 c29689de0749719e0689b0e1cfa32899 *R/Celltype_annotation_Cellmarker2.R
@@ -39,7 +39,7 @@ b367d874291b6a635ac30d8eb61a5ca3 *R/Probability_parameter.R
 d5c8b58f9868f2ffcd39e974dc6d4105 *R/onattach.R
 b20f05aa45278cab4a5ce2d9a216a727 *R/plot_pheatmap.R
 d07e2d57c147fa9a06143a222ba06790 *README.md
-24bc7c3f5a645905c53152bd3d0b8f61 *build/partial.rdb
+b54db8794555342c4feee5fe0b1b8f5b *build/partial.rdb
 b8994e3ff532d7b66143a255ca7b8e8e *data/Cellmarker2.rda
 a0c419857f8c97d4cadbb51e3292c0b5 *data/Cellmarker2_raw.rda
 e68b7b464c83ab446e36d67877bc3bbe *data/Cellmarker2_table.rda
@@ -91,7 +91,7 @@ cb75781c12022b96dcbe55c64935b7a7 *man/calculate_expression_skewness.Rd
 06ee733d52d971039680a870fa373d9b *man/calculate_probability.Rd
 6edba8828b907356b217e5574aa6e76b *man/compute_adaptive_parameters.Rd
 ec830f4a503798ab139b51139ee75c1c *man/dot-apply_umap_smoothing.Rd
-e026c023cfee11d1fc917c73f46bcd36 *man/dot-compute_aucell_scores.Rd
+4e3204739e9ae323f87c5fb2f84630a5 *man/dot-compute_aucell_scores.Rd
 d0656c312ed46fa8ac0f3015f31844e4 *man/dot-compute_weighted_scores.Rd
 515f45d78d13c052b14e060ca29064ca *man/estimate_batch_effect.Rd
 543b4615f2457faf25e9c9d03266c44a *man/extract_dataset_features.Rd
@@ -99,7 +99,7 @@ d0656c312ed46fa8ac0f3015f31844e4 *man/dot-compute_weighted_scores.Rd
 23c14f9961f42bd2077738673f5624d3 *man/plot.pheatmap.Rd
 56952a77a420047fa0997d92ac8a5e93 *tests/README.md
 f9eac85bf1e555b82d85e1fca8aa08f3 *tests/testthat.R
-da0eda6dc4edbab875d3f447b06d63ab *tests/testthat/Rplots.pdf
+36e8ee773cb31801b6d87c661b973ab0 *tests/testthat/Rplots.pdf
 832d0429f88f1c23177b0a2fbb2b67be *tests/testthat/helper-test_data.R
 2333b0e23c71c7dd9fc682e83a4903ab *tests/testthat/test-cluster-annotation.R
 f3230eb5292612bbd9236815f76dc6c6 *tests/testthat/test-internal-functions.R
