@@ -1,3 +1,20 @@
+## Version 1.1.5 (2026-06-03)
+
+*   **New Features**
+    *   Added `Celltype_Compare()`: a robust function for cross‑tabulating cell type labels and grouping variables between two single‑cell objects (e.g., Seurat). It automatically aligns cell barcodes using multiple normalisation strategies, returns count tables, column‑wise proportion tables, a dominant mapping, and a publication‑ready heatmap.
+
+*   **Improvements**
+    *   Updated general documentation and README structure.
+    
+
+## Version 1.1.4 (2026-04-23)
+
+*   **New Features**
+    *   Added a ASCII startup banner that displays when the package is attached.
+    
+*   **Improvements**
+    *   Optimized citation output formatting and reduced duplication in `.onAttach`.
+
 ## Version 1.1.3 (2026-04-07)
 
 *   **Bug Fixes**
