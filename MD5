@@ -1,7 +1,7 @@
-6363578b98f1e324482331c75edb4734 *DESCRIPTION
+c788bcf69715d3fb9fcffbbb48ab4b8b *DESCRIPTION
 3f844d097a257470b1861afd31cd61fb *LICENSE
-d24358bc0b9315a2c227059773ce1237 *NAMESPACE
-36eb83721c31987a53a183edb2831f06 *NEWS.md
+278ae2b283b28fcccdffe2b80a107953 *NAMESPACE
+36779dfc02eba389c47ee6d7b3307a2f *NEWS.md
 bb309d7cebfd1f6407e549caff4e7ed2 *R/Celltype_Annotation.R
 6fa49c3ac85626e8ff78b841d986e782 *R/Celltype_Annotation_Combined.R
 88a01776f8255c8a7394166f46a8cf1f *R/Celltype_Annotation_Features.R
@@ -16,6 +16,7 @@ c29689de0749719e0689b0e1cfa32899 *R/Celltype_annotation_Cellmarker2.R
 971bdeef1d6cbaeac9b331c4b00e42ed *R/Celltype_annotation_Excel.R
 2b9798de1c4da4b93011ce3b494e35e7 *R/Celltype_annotation_PanglaoDB.R
 32d34f1377c207de47129678b16c9f12 *R/Celltype_annotation_Seurat.R
+fec0d76593dbc14cfb47b93ff1879d8c *R/Compute_Gene_AUC_ROC.R
 4a2bd3485d6027bb88b0e73580a99832 *R/Database_Cellmarker2.R
 fbfe6dd83eca07337a41d34542ee4f85 *R/Database_Cellmarker2_raw.R
 640c41d5fa88e10bcb618d9a842be952 *R/Database_Cellmarker2_table.R
@@ -39,7 +40,7 @@ b367d874291b6a635ac30d8eb61a5ca3 *R/Probability_parameter.R
 700c2914d40853aac685c651dd6a6075 *R/globals.R
 9902cd98b3618307e43b9e6efa771616 *R/onattach.R
 b20f05aa45278cab4a5ce2d9a216a727 *R/plot_pheatmap.R
-80ed7be6bb4073886606e351ffbe3ef5 *README.md
+dbed0f362b95728dafbf9934cace6d52 *README.md
 24bc7c3f5a645905c53152bd3d0b8f61 *build/partial.rdb
 b8994e3ff532d7b66143a255ca7b8e8e *data/Cellmarker2.rda
 a0c419857f8c97d4cadbb51e3292c0b5 *data/Cellmarker2_raw.rda
@@ -64,13 +65,14 @@ c2921f6a976308da97316f74e063ad0b *man/Celltype_Annotation_Heatmap.Rd
 63eb9208d05fc9ddcc7ef9b9b432ed0c *man/Celltype_Annotation_PerCell.Rd
 dde538387038bf57bb3ede5dc48487fa *man/Celltype_Calculate.Rd
 d39556429870b0c8775b01d1cf7123d0 *man/Celltype_Calculate_PerCell.Rd
-5975af5e610a5abeec2b51895d5dff3e *man/Celltype_Compare.Rd
+9db4bd6abc56062a8bd9ae3b9b230da1 *man/Celltype_Compare.Rd
 23c8d40e2a868158c2ec610e74a91d54 *man/Celltype_Verification.Rd
 9de3dbd7d95a1e14c272d15dfa7391d7 *man/Celltype_Verification_PerCell.Rd
-b9d27e97150937c2a7476820bf008364 *man/Celltype_annotation_Cellmarker2.Rd
-02273a2cff9f0814d4fc31a8bb12aa6b *man/Celltype_annotation_Excel.Rd
-2917856582bfffd8a3c9a7774ea54d54 *man/Celltype_annotation_PanglaoDB.Rd
-0aea6903dd9a811cbac3737eb0be053c *man/Celltype_annotation_Seurat.Rd
+a57d0dea0d8e921f951ed4788ef93b46 *man/Celltype_annotation_Cellmarker2.Rd
+8e955cb927238911362348d12ed56bf2 *man/Celltype_annotation_Excel.Rd
+950d596e207c1891187ade0d14046ee5 *man/Celltype_annotation_PanglaoDB.Rd
+7e13d9c1eebbd7e5ef48e55b685479a6 *man/Celltype_annotation_Seurat.Rd
+104f0a4db7e1508152cfa13a30a9abc4 *man/Compute_Gene_AUC_ROC.Rd
 7ed3d6e20ab87803c9b2a18388aa698e *man/Markers_filter_Cellmarker2.Rd
 0fc1d94ddcc627f6815f5f91137030c4 *man/Markers_filter_PanglaoDB.Rd
 882f41c198f2d9ed4a3b967df6586de7 *man/Markers_filter_ScType.Rd

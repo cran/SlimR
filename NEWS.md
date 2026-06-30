@@ -1,3 +1,12 @@
+## Version 1.1.6 (2026-06-30)
+
+*   **New Features**
+    *   `Compute_Gene_AUC_ROC()` computes single‑gene AUC and optionally plots the ROC curve, supporting raw and rank‑based scoring, expression truncation, and cell subsetting for robust marker evaluation.
+
+*   **Improvements**
+    *   Updated `README.md` with Section 5.2 demonstrating the new function.
+    *   Various minor bug fixes.
+
 ## Version 1.1.5 (2026-06-03)
 
 *   **New Features**

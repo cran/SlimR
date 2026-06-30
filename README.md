@@ -27,6 +27,7 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
 4. [Semi-Automated Annotation Workflow](#4-semi-automated-annotation-workflow)
 5. [Other Functions Provided](#5-other-functions-provided)
     - [5.1 Cell type mapping](#51-cell-type-mapping)
+    - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -521,6 +522,40 @@ head(result$prop_table)   # column-wise proportions
 print(result$plot)         # heatmap of proportions
 result$main_to_sub         # dominant cell type per group
 ```
+
+### 5.2 Single-Gene AUC and ROC Analysis
+
+Quickly assess the discriminative power of a single gene for a user‑defined cell group. The function returns the AUC, ROC data for custom plotting, and an optional ggplot2 curve.
+
+```r
+result <- Compute_Gene_AUC_ROC(
+  seurat_obj  = sce,
+  gene        = "CD3D",
+  group_col   = "Cell Types",
+  group_label = "T cells",
+  assay       = "RNA",
+  method      = "rank",
+  plot        = TRUE,
+  line_color  = "navy",
+  line_size   = 1
+)
+
+# Access results
+result$AUC              # numeric AUC value
+head(result$roc_data)   # data.frame with fpr and tpr
+result$roc_plot         # ggplot object (when plot = TRUE)
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+- `method`: `"raw"` (raw expression, optionally truncated by `min_expression`) or `"rank"` (dropout‑robust rank‑based scores).  
+- `min_expression`: when `method = "raw"`, values below this are set to zero.  
+- `keep_expression_above`: optional threshold – keep only cells with expression above it. **Warning:** this shifts the AUC interpretation to “discrimination among expressing cells” and should be compared with the default all‑cell result.  
+- `plot`, `plot_title`, `line_color`, `line_size`: control the ROC plot appearance.
+
+</details>
+
 
 ## 6. Citation
 
