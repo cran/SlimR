@@ -28,6 +28,9 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
 5. [Other Functions Provided](#5-other-functions-provided)
     - [5.1 Cell type mapping](#51-cell-type-mapping)
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
+    - [5.3 Hierarchical Proportion Plot](#53-hierarchical-proportion-plot)
+    - [5.4 Weighted Voronoi Plot](#54-weighted-voronoi-plot)
+    - [5.5 Built‑in Colour Palettes](#55-builtin-colour-palettes)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -294,7 +297,7 @@ SlimR_anno_result <- Celltype_Calculate(seurat_obj = sce,
     threshold = 0.6,
     compute_AUC = TRUE,
     plot_AUC = TRUE,
-    AUC_correction = FALSE,
+    AUC_correction = TRUE,
     colour_low = "navy",
     colour_high = "firebrick3"
     )
@@ -556,6 +559,174 @@ result$roc_plot         # ggplot object (when plot = TRUE)
 
 </details>
 
+以下是优化后的 README 5.3、5.4 节以及新增的 5.5 节。主要改动：
+
+- 5.3 和 5.4 中关于颜色的描述改为：调色板源自 ArchR，但已内置于 SlimR，无需额外安装 ArchR。
+- 删除了原有的 ArchR 安装指引，仅保留说明颜色源自 ArchR 的内置调色板。
+- 新增 5.5 节 `paletteDiscrete`，详细介绍内置调色板，注明文献引用、官网、GitHub、MIT 许可证，并给出简单示例。
+
+```markdown
+### 5.3 Hierarchical Proportion Plot
+
+Create a publication‑ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub‑types.  
+The **upper panel** draws a layered tree diagram (bubble size ∝ cell count, parent‑child links shown as three‑segment step lines). The **lower panel** (optional) displays per‑group cell‑type proportions as a heatmap perfectly aligned with the terminal leaves.
+
+```r
+# Full three-level hierarchy with proportion heatmap
+res <- Plot_Hierarchy_Proportion(
+  seurat_obj        = sce,
+  Main_cell_types   = "Main_type",
+  Cell_types        = "Cell_type",
+  Sub_cell_types    = "Sub_type",
+  proportion        = TRUE,
+  Groups            = "orig.ident",
+  low_col           = "white",
+  high_col          = "navy"
+)
+
+# Access individual plot components
+res$tree_plot        # ggplot object – tree including labels & short sticks
+res$prop_plot        # ggplot object – proportion heatmap
+res$combined_plot    # combined plot (requires patchwork)
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+- **Hierarchy levels**  
+  `Main_cell_types`, `Cell_types`, `Sub_cell_types` are character strings naming columns in `seurat_obj@meta.data`.  
+  Use `NULL` to omit a level. If `Sub_cell_types` is given, `Cell_types` must also be provided.  
+  Category names (e.g. “T cell”) must be **unique within each level** (they can repeat across levels).
+
+- **Partial sub‑clustering**  
+  It is common that only a subset of cells receives a finer annotation (e.g., only T cells are split into subtypes). The function automatically handles this: a cell without a valid sub‑label becomes a leaf at the deepest level where it has a label. The proportion heatmap is then built from the **union of all terminal leaf labels** – so no population is lost.
+
+- **Label placement & adaptive height**  
+  Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
+
+- **Colour control**  
+  `col_Main_cell_types`, `col_Cell_types`, `col_Sub_cell_types` accept named or unnamed colour vectors. When missing, the function generates a palette using the internal `paletteDiscrete()` function, which replicates the *stallion* palette from the **ArchR** package.  No external ArchR installation is required.
+
+- **Proportion heatmap**  
+  `proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).  
+  `Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑red colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis.
+
+- **Non‑leaf annotations**  
+  `show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
+
+- **Output**  
+  The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion = FALSE`), and `combined_plot` (NULL unless **patchwork** is installed). All are **ggplot2** objects that can be further customised. The combined plot is automatically printed to the active graphics device.
+
+</details>
+
+### 5.4 Weighted Voronoi Plot
+
+Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data. Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count. Colours follow the same palette logic as other SlimR functions, derived from ArchR but fully built into the package.
+
+The plot is drawn using a custom `ggplot2`‑based renderer to ensure exact colour matching with `Plot_Hierarchy_Proportion` and `DimPlot`, bypassing the limited colour handling of the upstream `WeightedTreemaps` package.
+
+```r
+# Basic treemap with rounded rectangles, displaying both count and percentage
+res <- Plot_Voronoi_diagram(
+  seurat_obj      = sce,
+  Main_cell_types = "Main_type",
+  Cell_types      = "Cell_type",
+  label_type      = "both",
+  shape           = "rounded_rect",
+  seed            = 1
+)
+
+# Access the underlying treemap object or the final ggplot
+res$voronoi_treemap   # the treemap object from WeightedTreemaps
+res$plot              # the ggplot object
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+- **Data & hierarchy**  
+  `Main_cell_types` and `Cell_types` are column names in `seurat_obj@meta.data` defining the two‑level hierarchy.  
+  Only cells with valid (non‑missing, non‑empty) labels in both columns are used.  
+  The voronoi diagram groups cells by main type (level 1) and further splits each main type into sub‑type polygons (level 2).
+
+- **Polygon labels (`label_type`)**  
+  Controls the text displayed inside each sub‑type polygon:
+  - `"both"` (default) – shows the sub‑type name, cell count, and percentage of total cells (each on a new line).
+  - `"count"` – shows sub‑type name and cell count.
+  - `"percentage"` – shows sub‑type name and percentage of total cells.
+  - `"none"` – shows only the sub‑type name.
+
+- **Polygon shape (`shape`)**  
+  `"rounded_rect"` (default) produces rounded rectangles; `"circle"` yields circular polygons.  
+  The layout is non‑deterministic but can be made reproducible via the `seed` parameter.
+
+- **Reproducibility (`seed`)**  
+  A single integer passed to the Voronoi layout algorithm. The same seed yields the same polygon arrangement across runs.
+
+- **Colour control (`col_Cell_types`)**  
+  Accepts a named or unnamed character vector of colours for the `Cell_types` categories. If `NULL`, colours are automatically generated via the internal `paletteDiscrete()` function (replicates the ArchR *stallion* palette). No external ArchR installation is needed.
+
+- **Label appearance**  
+  `label_size` controls the text size inside polygons (default `3`).  
+  `label_color` sets the text colour (default `"black"`).  
+  `label_fontface` controls the font face (`"plain"`, `"italic"`, `"bold"`; default `"bold"`).
+
+- **Borders and frames**  
+  The function draws three types of borders:
+  - **Sub‑type borders** (`subtype_border_lwd`, default `0.15`) – thin lines between individual sub‑type polygons.
+  - **Main borders** (`main_border_lwd`, default `0.35`) – thicker lines between main cell type regions, drawn on top of sub‑type borders for clear separation.
+  - **Outer frame** (`outer_border_lwd`, default `0.4`) – a convex hull tightly surrounding the entire plot, following the natural outline of the treemap.
+  All borders share the same `border_color` (default `"grey90"`, a very light grey). This parameter can be customised to any valid R colour.
+
+- **Legend**  
+  `legend = TRUE` (default) shows a colour legend; `legend_position` controls its placement (default `"right"`, also accepts `"left"`, `"bottom"`, `"top"`, or `"none"`).
+
+- **Output**  
+  The function invisibly returns a list with two components:
+  - `voronoi_treemap`: the raw `voronoiTreemap` object from `WeightedTreemaps`, containing polygon coordinates and metadata.
+  - `plot`: the final `ggplot` object, produced by a custom drawing routine that extracts polygon vertices and applies colours via `scale_fill_manual()`.
+  The plot is automatically printed to the active graphics device.
+
+- **Dependencies**  
+  Requires the `WeightedTreemaps` package, available from GitHub. If not installed, an error is thrown with installation instructions.  
+  The function only uses `WeightedTreemaps::voronoiTreemap()` to compute polygon layouts; all rendering is done with `ggplot2`.
+
+</details>
+
+### 5.5 Built‑in Colour Palettes
+
+SlimR provides an internal function `paletteDiscrete()` that reproduces the colour palettes from the **ArchR** package.  
+These palettes, including the default *stallion*, are hard‑coded in the package and do **not** require an external ArchR installation.
+
+**Usage**  
+You can call the palette generator directly:
+
+```r
+# Generate colours for a set of categories
+cols <- paletteDiscrete(c("B cells", "T cells", "NK cells"))
+print(cols)
+
+# Custom set (e.g., "kelly")
+cols <- paletteDiscrete(c("B cells", "T cells", "NK cells"), set = "kelly")
+```
+
+The function returns a named vector of hex colours, sorted naturally (e.g., “NK cells” before “T cells”). When the number of categories exceeds the palette size, colours are interpolated smoothly.
+
+All SlimR plotting functions that accept `col_...` parameters automatically use this palette when no custom colours are supplied, ensuring a consistent and publication‑ready colour scheme across different types of plots.
+
+<details>
+<summary><b>Attribution</b></summary>
+
+The palettes are derived from ArchR, a scalable software package for integrative single‑cell chromatin accessibility analysis:
+
+- Granja JM, Corces MR et al. (2021) **ArchR is a scalable software package for integrative single‑cell chromatin accessibility analysis**. *Nature Genetics* **53**, 403–411. doi:10.1038/s41588-021-00790-6
+- Project website: [https://www.archrproject.com/](https://www.archrproject.com/)
+- GitHub repository: [https://github.com/GreenleafLab/ArchR](https://github.com/GreenleafLab/ArchR)
+
+**License**  
+ArchR is distributed under the **MIT License**. SlimR respects the original license by including the palette data directly and documenting its provenance.
+
+</details>
 
 ## 6. Citation
 
