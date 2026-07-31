@@ -17,14 +17,19 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
     - [2.1 From Cellmarker2 Database](#21-from-cellmarker2-database)
     - [2.2 From PanglaoDB Database](#22-from-panglaodb-database)
     - [2.3 From ScType Database](#23-from-sctype-database)
-    - [2.4 From Seurat Objects](#24-from-seurat-objects)
-    - [2.5 From Excel Tables](#25-from-excel-tables)
-    - [2.6 Built-in Markers Lists](#26-built-in-markers-lists)
+    - [2.4 From CellTypist Organ Atlas](#24-from-celltypist-organ-atlas)
+    - [2.5 From Seurat Objects](#25-from-seurat-objects)
+    - [2.6 From Scanpy (Python) Objects](#26-from-scanpy-python-objects)
+    - [2.7 From Excel Tables](#27-from-excel-tables)
+    - [2.8 Built-in Markers Lists](#28-built-in-markers-lists)
 3. [Automated Annotation Workflow](#3-automated-annotation-workflow)
     - [3.1 Calculate Parameter](#31-calculate-parameter)
     - [3.2 Cluster-Based Annotation](#32-cluster-based-annotation)
     - [3.3 Per-Cell Annotation](#33-per-cell-annotation)
 4. [Semi-Automated Annotation Workflow](#4-semi-automated-annotation-workflow)
+    - [4.1 Annotation Heat Map](#41-annotation-heat-map)
+    - [4.2 Annotation Feature Plots](#42-annotation-feature-plots)
+    - [4.3 Annotation Combined Plots](#43-annotation-combined-plots)
 5. [Other Functions Provided](#5-other-functions-provided)
     - [5.1 Cell type mapping](#51-cell-type-mapping)
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
@@ -156,6 +161,7 @@ Markers_list_ScType <- Markers_filter_ScType(
 )
 ```
 
+
 **Important: Specify `tissue_type` for accurate annotations.**
 
 <details>
@@ -168,7 +174,36 @@ View(ScType_table)
 
 </details>
 
-### 2.4 From Seurat Objects
+### 2.4 From CellTypist Organ Atlas
+
+**Reference:**  
+*Xu et al. (2023)* [doi:10.1016/j.cell.2023.11.026](https://doi.org/10.1016/j.cell.2023.11.026)  
+*Domínguez Conde et al. (2022)* [doi:10.1126/science.abl5197](https://doi.org/10.1126/science.abl5197)
+
+SlimR provides a pre‑computed marker list derived from the [CellTypist organ atlas](https://www.celltypist.org/organs).  
+It covers **12 human organs** (Blood, Bone_marrow, Heart, Hippocampus, Intestine, Kidney, Liver, Lung, Lymph_node, Pancreas, Skeletal_muscle, Spleen) and **399 cell types**, with markers obtained via the Scanpy workflow (log1p‑normalised data, Wilcoxon test, adjusted p‑value < 0.01, log2 fold‑change > 0, then ranked by log fold‑change; **top 100 genes** per cell type). The data have been imported using `Read_excel_markers` and are directly usable.
+
+```r
+# Load the built-in list
+CellTypist <- SlimR::CellTypist
+
+# Access markers for one organ (e.g., Intestine)
+Markers_list_CellTypist <- CellTypist$Intestine
+
+# Each organ contains a named list of data frames (one per cell type)
+names(Markers_list_CellTypist)
+
+# The data frames are pre‑sorted by log fold‑change (descending).
+# To restrict to the top 20 markers for every cell type in this organ:
+Markers_list_CellTypist_top20 <- lapply(Markers_list_CellTypist, function(df) head(df, 20))
+```
+
+**Key points:**
+- Use `$organ_name` to extract an organ; the organ names are exactly as shown above (case‑sensitive).
+- Each cell‑type data frame is already ranked by `logfoldchanges` (descending) – simply use `head(df, n)` to obtain the top *n* markers.
+- The full list can be passed directly to SlimR’s annotation functions as a standard `Markers_list` object.
+
+### 2.5 From Seurat Objects
 
 ``` r
 seurat_markers <- Seurat::FindAllMarkers(
@@ -185,31 +220,85 @@ Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
 
 *Tip: `sort_by = "FSS"` ranks by Feature Significance Score (log2FC × Expression ratio). Use `sort_by = "avg_log2FC"` for fold-change ranking.*
 
+**Important: To avoid long running time, for data with more than 100,000 cells, it is recommended to use scanpy for DEGs calculation (Section 2.6).**
+
+### 2.6 From Scanpy (Python) Objects
+
+Differential expression results from a Scanpy AnnData object can be exported to an Excel file and then loaded directly into SlimR’s standard format using `Read_excel_markers`.
+
 <details>
-<summary><b>Use presto for ~10× faster marker detection</b></summary>
+<summary><b>Process Codes</b></summary>
 
-``` r
-seurat_markers <- dplyr::filter(
-    presto::wilcoxauc(
-      X = sce,
-      group_by = "Cell_type",
-      seurat_assay = "RNA"
-      ),
-    padj < 0.05, logFC > 0.5
-    )
+```python
+import scanpy as sc
+import pandas as pd
+import numpy as np
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+import re
 
-Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
-    sources = "presto",
-    sort_by = "FSS",
-    gene_filter = 20
-    )
+# Load data
+adata = sc.read_h5ad("adata.h5ad")
+
+# ------------------------------------------------------------
+# Ensure expression data is log1p‑normalised.
+# If adata.X contains raw counts, normalise and log1p now:
+#   sc.pp.normalize_total(adata, target_sum=1e4)
+#   sc.pp.log1p(adata)
+#
+# If raw counts are in a layer (e.g., 'counts'), move them to .X first:
+#   adata.X = adata.layers['counts'].copy()
+#   sc.pp.normalize_total(adata, target_sum=1e4)
+#   sc.pp.log1p(adata)
+#
+# If .X already contains log1p data, you can skip the step above.
+# ------------------------------------------------------------
+
+# Cluster column (adjust to your metadata column name)
+cluster_key = "Curated_annotation"
+adata.obs[cluster_key] = adata.obs[cluster_key].astype("category")
+clusters = adata.obs[cluster_key].cat.categories
+
+# Wilcoxon test (one‑vs‑rest)
+sc.tl.rank_genes_groups(adata, groupby=cluster_key,
+                        method="wilcoxon", n_jobs=-1)
+
+# Collect filtered results per cluster
+de_dict = {}
+for clust in clusters:
+    df = sc.get.rank_genes_groups_df(adata, group=clust)
+    df = df[(df["pvals_adj"] < 0.01) & (df["logfoldchanges"] > 0)]
+    df = df.sort_values("logfoldchanges", ascending=False).head(100)
+    df = df.rename(columns={"names": "gene"})
+    # Round numeric columns for cleaner output
+    for col in df.select_dtypes(include=[np.number]).columns:
+        df[col] = df[col].round(4)
+    de_dict[clust] = df
+
+# Write to Excel (one sheet per cluster)
+def sanitize_sheet_name(name):
+    return re.sub(r'[\[\]:*?/\\]', '_', str(name))[:31]
+
+wb = Workbook()
+wb.remove(wb.active)
+for clust in clusters:
+    ws = wb.create_sheet(title=sanitize_sheet_name(clust))
+    for row in dataframe_to_rows(de_dict[clust], index=False, header=True):
+        ws.append(row)
+wb.save("DEGs.xlsx")
 ```
-
-*Install presto: `devtools::install_github('immunogenomics/presto')`*
 
 </details>
 
-### 2.5 From Excel Tables
+**Important:**  
+- Differential expression must be computed on **log1p‑normalised** data. If your `.X` still holds raw counts, normalise (e.g., `normalize_total` + `log1p`) before calling `rank_genes_groups`.  
+- Adapt `groupby` to your actual annotation column (e.g., `"Cell_type"`, `"leiden"`).  
+- You can adjust the significance threshold (`pvals_adj`), fold‑change direction, and number of genes (`head(100)`) to suit your analysis.
+
+After saving the `DEGs.xlsx` file, use the `Read_excel_markers` function from Section 2.7 to import it into R.
+
+
+### 2.7 From Excel Tables
 
 **Format:** Each sheet name = cell type, first row = headers, first column = markers, subsequent columns = metrics (optional).
 
@@ -219,7 +308,7 @@ Markers_list_Excel <- Read_excel_markers("D:/Laboratory/Marker_load.xlsx")
 
 *If your Excel file lacks column headers, set `has_colnames = FALSE`.*
 
-### 2.6 Built-in Markers Lists
+### 2.8 Built-in Markers Lists
 
 SlimR includes curated marker lists for specific annotation tasks:
 
@@ -232,7 +321,11 @@ SlimR includes curated marker lists for specific annotation tasks:
 
 ``` r
 # Example: Load built-in markers
-Markers_list <- SlimR::Markers_list_scIBD
+Markers_list_scIBD <- SlimR::Markers_list_scIBD
+
+# The data frames are pre‑sorted by log fold‑change (descending).
+# To restrict to the top 20 markers for every cell type in this organ:
+Markers_list_scIBD_top20 <- lapply(Markers_list_scIBD, function(df) head(df, 20))
 ```
 
 **Important: Ensure your input Seurat object matches the tissue/cell type scope of the selected marker list.**
@@ -303,7 +396,24 @@ SlimR_anno_result <- Celltype_Calculate(seurat_obj = sce,
     )
 ```
 
-*If you ran `Parameter_Calculate()`, use: `min_expression = SlimR_params$min_expression`, `specificity_weight = SlimR_params$specificity_weight`, `threshold = SlimR_params$threshold`.*
+<details>
+<summary><b>Parameter descriptions</b></summary>
+
+- **`seurat_obj`**: Seurat object containing annotation columns (e.g., `seurat_cluster`) in `meta.data`.
+- **`gene_list`**: A named list of markers, where each element is a data frame with marker genes in the first column. Can be generated by `Markers_filter_Cellmarker2()`, `Markers_filter_PanglaoDB()`, `read_excel_markers()`, or `read_seurat_markers()`.
+- **`species`**: `"Human"` or `"Mouse"` – used for standardising gene symbols in the marker list.
+- **`cluster_col`**: Column name in `meta.data` that defines clusters (default: `"seurat_clusters"`).
+- **`assay`**: Assay to use (default: `"RNA"`).
+- **`min_expression`**: Threshold for considering a gene “expressed” in a cell; low‑expression cells are filtered to reduce noise (default: `0.1`).
+- **`specificity_weight`**: Controls how much expression variability (standard deviation) within a cluster contributes to the specificity score; higher values amplify variability (default: `3`).
+- **`threshold`**: Normalised similarity threshold between the alternative and predicted cell types; used for filtering uncertain assignments (default: `0.6`).
+- **`compute_AUC`**: If `TRUE`, calculates AUC values for each predicted cell type to measure marker discriminative power (default: `TRUE`).
+- **`plot_AUC`**: If `TRUE`, generates an ROC curve plot for the predicted cell types (default: `TRUE`).
+- **`AUC_correction`**: If `TRUE`, uses the highest‑AUC cell type among candidates (probability > threshold) as the final prediction, and records its AUC in the `AUC` column (default: `FALSE`).
+- **`colour_low`**: Colour for the lowest probability in the heatmap (default: `"navy"`).
+- **`colour_high`**: Colour for the highest probability in the heatmap (default: `"firebrick3"`).
+
+</details>
 
 <details>
 <summary><b>View results & correct predictions</b></summary>
@@ -328,6 +438,8 @@ SlimR_anno_result$Prediction_results$Predicted_cell_type[
 *When correcting, preferably use cell types from the `Alternative_cell_types` column.*
 
 </details>
+
+*If you ran `Parameter_Calculate()`, use: `min_expression = SlimR_params$min_expression`, `specificity_weight = SlimR_params$specificity_weight`, `threshold = SlimR_params$threshold`.*
 
 **Step 2: Annotate Cell Types**
 
@@ -356,6 +468,8 @@ Celltype_Verification(seurat_obj = sce,
 **Important: Use matching `cluster_col` and `annotation_col` values across all three functions.**
 
 ### 3.3 Per-Cell Annotation
+
+**Please note: When performing cell-by-cell annotation, the annotation results based on cell resolution are subject to instability.**
 
 Three steps: **Calculate → Annotate → Verify**. Ideal for heterogeneous clusters, rare cell types, and continuous differentiation states.
 
@@ -440,8 +554,7 @@ Celltype_Verification_PerCell(
 
 For expert-guided manual annotation using visualizations:
 
-<details>
-<summary><b>4.1 Annotation Heat Map</b></summary>
+### 4.1 Annotation Heat Map
 
 ``` r
 Celltype_Annotation_Heatmap(
@@ -458,10 +571,7 @@ Celltype_Annotation_Heatmap(
 
 *Note: This function is now incorporated into `Celltype_Calculate()`. Use `Celltype_Calculate()` instead for automated workflows.*
 
-</details>
-
-<details>
-<summary><b>4.2 Annotation Feature Plots</b></summary>
+### 4.2 Annotation Feature Plots
 
 Generates per-cell-type expression dot plot with metric heat map:
 
@@ -482,10 +592,7 @@ Celltype_Annotation_Features(
 
 *Set `gene_list_type` to `"Cellmarker2"`, `"PanglaoDB"`, `"Seurat"`, or `"Excel"` to match your marker source.*
 
-</details>
-
-<details>
-<summary><b>4.3 Annotation Combined Plots</b></summary>
+### 4.3 Annotation Combined Plots
 
 Generates per-cell-type box plots of marker expression levels:
 
@@ -501,8 +608,6 @@ Celltype_Annotation_Combined(
   colour_high = "navy"
 )
 ```
-
-</details>
 
 ---
 
@@ -559,20 +664,13 @@ result$roc_plot         # ggplot object (when plot = TRUE)
 
 </details>
 
-以下是优化后的 README 5.3、5.4 节以及新增的 5.5 节。主要改动：
-
-- 5.3 和 5.4 中关于颜色的描述改为：调色板源自 ArchR，但已内置于 SlimR，无需额外安装 ArchR。
-- 删除了原有的 ArchR 安装指引，仅保留说明颜色源自 ArchR 的内置调色板。
-- 新增 5.5 节 `paletteDiscrete`，详细介绍内置调色板，注明文献引用、官网、GitHub、MIT 许可证，并给出简单示例。
-
-```markdown
 ### 5.3 Hierarchical Proportion Plot
 
 Create a publication‑ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub‑types.  
 The **upper panel** draws a layered tree diagram (bubble size ∝ cell count, parent‑child links shown as three‑segment step lines). The **lower panel** (optional) displays per‑group cell‑type proportions as a heatmap perfectly aligned with the terminal leaves.
 
 ```r
-# Full three-level hierarchy with proportion heatmap
+# Full three-level hierarchy with proportion heatmap (default: row‑wise proportions)
 res <- Plot_Hierarchy_Proportion(
   seurat_obj        = sce,
   Main_cell_types   = "Main_type",
@@ -582,6 +680,18 @@ res <- Plot_Hierarchy_Proportion(
   Groups            = "orig.ident",
   low_col           = "white",
   high_col          = "navy"
+)
+
+# When plotting sub‑types of a larger population (e.g., immune subsets)
+# where total group sizes differ, use adjust_by_group = TRUE
+res <- Plot_Hierarchy_Proportion(
+  seurat_obj        = sce,
+  Main_cell_types   = "Immune_Main_type",
+  Cell_types        = "Immune_Cell_type",
+  Sub_cell_types    = "Immune_Sub_type",
+  proportion        = TRUE,
+  Groups            = "condition",
+  adjust_by_group   = TRUE
 )
 
 # Access individual plot components
@@ -609,7 +719,10 @@ res$combined_plot    # combined plot (requires patchwork)
 
 - **Proportion heatmap**  
   `proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).  
-  `Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑red colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis.
+  `Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑red colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis, and, if available, the number of cells in each group is appended (e.g. “Control (1254)”).  
+
+  - **Adjustment for unequal group sizes (`adjust_by_group`)**  
+    When analysing sub‑types derived from a larger population (e.g., immune subsets) and the total number of cells in each group differs substantially, set `adjust_by_group = TRUE`. This option multiplies the row‑wise proportion by the ratio of the group’s cell count to the mean group cell count. The resulting heatmap then reflects both within‑group composition and between‑group abundance differences. The colour scale is automatically normalised across all cells and groups. For broad cell type visualisation or when group sizes are balanced, keep the default `FALSE`.
 
 - **Non‑leaf annotations**  
   `show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
@@ -695,22 +808,26 @@ res$plot              # the ggplot object
 
 ### 5.5 Built‑in Colour Palettes
 
-SlimR provides an internal function `paletteDiscrete()` that reproduces the colour palettes from the **ArchR** package.  
-These palettes, including the default *stallion*, are hard‑coded in the package and do **not** require an external ArchR installation.
+Since *ArchR* is not available on CRAN, SlimR incorporates its colour palettes directly (via the internal function `paletteDiscrete()`) so that users can enjoy the same publication‑quality colours without any additional installation. The palettes, including the default stallion, are hard‑coded in the package and require no external dependencies.
 
-**Usage**  
 You can call the palette generator directly:
-
 ```r
-# Generate colours for a set of categories
-cols <- paletteDiscrete(c("B cells", "T cells", "NK cells"))
-print(cols)
+# Display "orig.ident" using the built-in palette
+col.clr <- SlimR::paletteDiscrete(values = c(names(table(sce$orig.ident))))
+DimPlot(sce,
+  reduction = "umap",
+  group.by = "orig.ident",
+  cols = col.clr,label = TRUE) + NoAxes()
 
-# Custom set (e.g., "kelly")
-cols <- paletteDiscrete(c("B cells", "T cells", "NK cells"), set = "kelly")
+# Display "cell_type" using the built-in palette
+col.clr <- SlimR::paletteDiscrete(levels(sce$cell_type))
+DimPlot(sce,
+  reduction = "umap",
+  group.by = "cell_type",
+  cols = col.clr,label = TRUE) + NoAxes()
 ```
 
-The function returns a named vector of hex colours, sorted naturally (e.g., “NK cells” before “T cells”). When the number of categories exceeds the palette size, colours are interpolated smoothly.
+The function returns a named vector of hex colours, arranged horizontally according to the input vector. When the number of categories exceeds the palette size, colours are interpolated smoothly.
 
 All SlimR plotting functions that accept `col_...` parameters automatically use this palette when no custom colours are supplied, ensuring a consistent and publication‑ready colour scheme across different types of plots.
 
