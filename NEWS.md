@@ -1,3 +1,28 @@
+## Version 1.2.0 (2026-10-16)
+
+*   **New Features**
+    *   Added the `scBaseCount` database, covering Human, Mouse, Drosophila, and Zebrafish, with four species-specific marker gene set lists: `human_gene_sets`, `mouse_gene_sets`, `fly_gene_sets`, and `zebrafish_gene_sets`.
+    *   New function `Compute_Gene_PRC()`: Computes PRC-AUC (Average Precision) and the no-skill baseline for a single gene against a user-defined cell group. Complements `Compute_Gene_AUC_ROC()` and is better suited to rare cell types under dropout and background contamination.
+
+*   **Improvements**
+    *   Added roxygen2 documentation and citation for `scBaseCount` (Youngblut et al., 2026, doi:10.1016/j.cell.2026.08.025), plus README section 2.5.
+    *   Added README section 5.3 for single-gene PRC-AUC analysis.
+    *   Updated general documentation and README structure.
+
+## Version 1.1.9 (2026-08-14)
+
+*   **New Features**
+    *   New function `Plot_Group_Gene_Heatmap()`: Generates publication-quality group-level mean Z-score expression heatmaps across custom cell groups (e.g., cell types or samples). Supports seamless integration with Seurat v4 and v5 objects.
+
+*   **Improvements**
+    *   Enhanced `Plot_Hierarchy_Proportion()`:
+        *   Added percentage scale conversion (`0–100%`) for proportion heatmap values and updated legend titles to `"Proportion (%)"` / `"Adjusted Proportion (%)"`.
+        *   Added a `"Group (Cell Number)"` axis header above Y-axis labels for improved readability.
+        *   Introduced `show_value_proportion` parameter to overlay percentage numbers inside heatmap cells with dynamic text contrast.
+    *   Integrated discrete color palette handling in `Plot_Group_Gene_Heatmap()` using SlimR's internal `paletteDiscrete()` function (derived from ArchR) for column and row annotation bars.
+    *   Optimized and revised roxygen2 comments for relevant functions.
+    *   Updated general documentation and README structure.
+
 ## Version 1.1.8 (2026-07-31)
 
 *   **New Features**

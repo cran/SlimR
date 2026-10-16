@@ -87,14 +87,14 @@ automatically displayed via \pkg{ggplot2}.
 \examples{
 \dontrun{
 # Default: raw expression, plot displayed automatically
-res <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12)
+res <- Compute_Gene_AUC_ROC(sce, "CD3D", "seurat_clusters", 12)
 
 # Rank-based (robust to dropout)
-res_rank <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12,
+res_rank <- Compute_Gene_AUC_ROC(sce, "CD3D", "seurat_clusters", 12,
                                  method = "rank")
 
 # Keep only cells expressing above 0.5 (exploratory)
-res_sub <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12,
+res_sub <- Compute_Gene_AUC_ROC(sce, "CD3D", "seurat_clusters", 12,
                                 keep_expression_above = 0.5)
 }
 }
@@ -105,6 +105,8 @@ Other Section_5_Other_Functions_Provided:
 \code{\link[=Celltype_annotation_Excel]{Celltype_annotation_Excel()}},
 \code{\link[=Celltype_annotation_PanglaoDB]{Celltype_annotation_PanglaoDB()}},
 \code{\link[=Celltype_annotation_Seurat]{Celltype_annotation_Seurat()}},
+\code{\link[=Compute_Gene_PRC]{Compute_Gene_PRC()}},
+\code{\link[=Plot_Group_Gene_Heatmap]{Plot_Group_Gene_Heatmap()}},
 \code{\link[=Plot_Hierarchy_Proportion]{Plot_Hierarchy_Proportion()}},
 \code{\link[=Plot_Voronoi_diagram]{Plot_Voronoi_diagram()}},
 \code{\link[=paletteDiscrete]{paletteDiscrete()}}

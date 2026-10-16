@@ -18,10 +18,11 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
     - [2.2 From PanglaoDB Database](#22-from-panglaodb-database)
     - [2.3 From ScType Database](#23-from-sctype-database)
     - [2.4 From CellTypist Organ Atlas](#24-from-celltypist-organ-atlas)
-    - [2.5 From Seurat Objects](#25-from-seurat-objects)
-    - [2.6 From Scanpy (Python) Objects](#26-from-scanpy-python-objects)
-    - [2.7 From Excel Tables](#27-from-excel-tables)
-    - [2.8 Built-in Markers Lists](#28-built-in-markers-lists)
+    - [2.5 From scBaseCount Database](#25-from-scbasecount-database)
+    - [2.6 From Seurat Objects](#26-from-seurat-objects)
+    - [2.7 From Scanpy (Python) Objects](#27-from-scanpy-python-objects)
+    - [2.8 From Excel Tables](#28-from-excel-tables)
+    - [2.9 Other Built-in Markers Lists](#29-other-built-in-markers-lists)
 3. [Automated Annotation Workflow](#3-automated-annotation-workflow)
     - [3.1 Calculate Parameter](#31-calculate-parameter)
     - [3.2 Cluster-Based Annotation](#32-cluster-based-annotation)
@@ -33,9 +34,11 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
 5. [Other Functions Provided](#5-other-functions-provided)
     - [5.1 Cell type mapping](#51-cell-type-mapping)
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
-    - [5.3 Hierarchical Proportion Plot](#53-hierarchical-proportion-plot)
-    - [5.4 Weighted Voronoi Plot](#54-weighted-voronoi-plot)
-    - [5.5 Built‑in Colour Palettes](#55-builtin-colour-palettes)
+    - [5.3 Single-Gene PRC-AUC Analysis](#53-single-gene-prc-auc-analysis)
+    - [5.4 Hierarchical Proportion Plot](#54-hierarchical-proportion-plot)
+    - [5.5 Weighted Voronoi Plot](#55-weighted-voronoi-plot)
+    - [5.6 Grouped Gene Z-Score Heatmap](#56-grouped-gene-z-score-heatmap)
+    - [5.7 Built‑in Colour Palettes](#57-builtin-colour-palettes)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -98,6 +101,8 @@ SlimR uses a standardized list format: list names = cell types, first column = m
 
 **Reference:** *Hu et al. (2023) [doi:10.1093/nar/gkac947](https://doi.org/10.1093/nar/gkac947)*
 
+CellMarker 2.0 is a manually curated repository of experimentally supported markers across **human** and **mouse**, encompassing **26,915 markers**, **2,578 cell types**, and **656 tissues** (83,361 tissue–cell type–marker entries).  It also includes marker information from 48 sequencing technology sources (e.g., 10X Chromium, Smart‑Seq2, Drop‑seq) and 29 types of cell markers (protein‑coding genes, lncRNAs, processed pseudogenes, etc.). SlimR integrates the full dataset and provides flexible filtering to generate custom marker lists.
+
 ``` r
 Cellmarker2 <- SlimR::Cellmarker2
 
@@ -127,6 +132,8 @@ View(Cellmarker2_table)
 
 **Reference:** *Franzén et al. (2019) [doi:10.1093/database/baz046](https://doi.org/10.1093/database/baz046)*
 
+PanglaoDB is a public database of **1,368 single‑cell experiments** (covering most major platforms) with **>5 million cells** from human and mouse tissues. It includes a community‑curated marker compendium of **>8,000 gene–cell‑type associations**. SlimR integrates this marker compendium, allowing filtering by species and organ.
+
 ``` r
 PanglaoDB <- SlimR::PanglaoDB
 
@@ -151,6 +158,8 @@ View(PanglaoDB_table)
 
 **Reference:** *Ianevski et al. (2022) [doi:10.1038/s41467-022-28803-w](https://doi.org/10.1038/s41467-022-28803-w)*
 
+ScType provides a comprehensive marker database organised by **tissue type** (e.g., Immune system, Brain) and **cell name**, enabling data‑driven annotation using positive and negative markers. SlimR includes the full ScType marker collection for automated cell‑type identification.
+
 ``` r
 ScType <- SlimR::ScType
 
@@ -160,7 +169,6 @@ Markers_list_ScType <- Markers_filter_ScType(
   cell_name = NULL
 )
 ```
-
 
 **Important: Specify `tissue_type` for accurate annotations.**
 
@@ -177,11 +185,10 @@ View(ScType_table)
 ### 2.4 From CellTypist Organ Atlas
 
 **Reference:**  
-*Xu et al. (2023)* [doi:10.1016/j.cell.2023.11.026](https://doi.org/10.1016/j.cell.2023.11.026)  
-*Domínguez Conde et al. (2022)* [doi:10.1126/science.abl5197](https://doi.org/10.1126/science.abl5197)
+*Xu et al. (2023) [doi:10.1016/j.cell.2023.11.026](https://doi.org/10.1016/j.cell.2023.11.026)*
+*Domínguez Conde et al. (2022) [doi:10.1126/science.abl5197](https://doi.org/10.1126/science.abl5197)*
 
-SlimR provides a pre‑computed marker list derived from the [CellTypist organ atlas](https://www.celltypist.org/organs).  
-It covers **12 human organs** (Blood, Bone_marrow, Heart, Hippocampus, Intestine, Kidney, Liver, Lung, Lymph_node, Pancreas, Skeletal_muscle, Spleen) and **399 cell types**, with markers obtained via the Scanpy workflow (log1p‑normalised data, Wilcoxon test, adjusted p‑value < 0.01, log2 fold‑change > 0, then ranked by log fold‑change; **top 100 genes** per cell type). The data have been imported using `Read_excel_markers` and are directly usable.
+SlimR provides a pre‑computed marker list derived from the [CellTypist organ atlas](https://www.celltypist.org/organs). It covers **12 human organs** (Blood, Bone_marrow, Heart, Hippocampus, Intestine, Kidney, Liver, Lung, Lymph_node, Pancreas, Skeletal_muscle, Spleen) and **399 cell types**, with markers obtained via the Scanpy workflow (Section 2.6: log1p‑normalised data, Wilcoxon test, adjusted p‑value < 0.01, log2 fold‑change > 0, then ranked by log fold‑change; **top 100 genes** per cell type). The data have been imported using `Read_excel_markers` and are directly usable.
 
 ```r
 # Load the built-in list
@@ -203,7 +210,35 @@ Markers_list_CellTypist_top20 <- lapply(Markers_list_CellTypist, function(df) he
 - Each cell‑type data frame is already ranked by `logfoldchanges` (descending) – simply use `head(df, n)` to obtain the top *n* markers.
 - The full list can be passed directly to SlimR’s annotation functions as a standard `Markers_list` object.
 
-### 2.5 From Seurat Objects
+### 2.5 From scBaseCount Database
+
+**Reference:** *Youngblut et al. (2026) [doi:10.1016/j.cell.2026.08.025](https://doi.org/10.1016/j.cell.2026.08.025)*
+
+scBaseCount provides cross-species marker gene sets derived from over 500 million cells. SlimR includes four species-specific lists—human, mouse, zebrafish, and Drosophila—where each list contains cell type–marker gene sets ready for annotation.
+
+``` r
+scBaseCount <- SlimR::scBaseCount
+
+Markers_list_scBaseCount_human     <- scBaseCount$human_gene_sets
+Markers_list_scBaseCount_mouse     <- scBaseCount$mouse_gene_sets
+Markers_list_scBaseCount_fly       <- scBaseCount$fly_gene_sets
+Markers_list_scBaseCount_zebrafish <- scBaseCount$zebrafish_gene_sets
+```
+
+**Important: Select the species-specific list matching your data.**
+
+<details>
+<summary><b>Optional: Explore available species</b></summary>
+
+``` r
+names(SlimR::scBaseCount)
+# [1] "human_gene_sets"     "mouse_gene_sets"    
+# [3] "fly_gene_sets"       "zebrafish_gene_sets"
+```
+
+</details>
+
+### 2.6 From Seurat Objects
 
 ``` r
 seurat_markers <- Seurat::FindAllMarkers(
@@ -222,7 +257,7 @@ Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
 
 **Important: To avoid long running time, for data with more than 100,000 cells, it is recommended to use scanpy for DEGs calculation (Section 2.6).**
 
-### 2.6 From Scanpy (Python) Objects
+### 2.7 From Scanpy (Python) Objects
 
 Differential expression results from a Scanpy AnnData object can be exported to an Excel file and then loaded directly into SlimR’s standard format using `Read_excel_markers`.
 
@@ -298,7 +333,7 @@ wb.save("DEGs.xlsx")
 After saving the `DEGs.xlsx` file, use the `Read_excel_markers` function from Section 2.7 to import it into R.
 
 
-### 2.7 From Excel Tables
+### 2.8 From Excel Tables
 
 **Format:** Each sheet name = cell type, first row = headers, first column = markers, subsequent columns = metrics (optional).
 
@@ -308,7 +343,7 @@ Markers_list_Excel <- Read_excel_markers("D:/Laboratory/Marker_load.xlsx")
 
 *If your Excel file lacks column headers, set `has_colnames = FALSE`.*
 
-### 2.8 Built-in Markers Lists
+### 2.9 Other Built-in Markers Lists
 
 SlimR includes curated marker lists for specific annotation tasks:
 
@@ -664,7 +699,43 @@ result$roc_plot         # ggplot object (when plot = TRUE)
 
 </details>
 
-### 5.3 Hierarchical Proportion Plot
+### 5.3 Single-Gene PRC-AUC Analysis
+
+Assess how well a single gene identifies a user-defined cell group when the positive class is rare. PRC-AUC focuses on precision and recall, and is reported as Average Precision together with its no-skill baseline.
+
+```r
+result <- Compute_Gene_PRC(
+  seurat_obj  = sce,
+  gene        = "DCLK1",
+  group_col   = "Cell Types",
+  group_label = "Tuft cells",
+  assay       = "RNA",
+  method      = "rank",
+  plot        = TRUE,
+  line_color  = "darkmagenta",
+  line_size   = 1
+)
+
+# Access results
+result$PR_AUC           # numeric PR-AUC (average precision)
+result$Baseline         # no-skill baseline = positive class prevalence
+head(result$pr_data)    # data.frame with recall and precision
+result$pr_plot          # ggplot object (when plot = TRUE)
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+- `method`: `"raw"` (raw expression, optionally truncated by `min_expression`) or `"rank"` (dropout-robust rank-based scores).  
+- `min_expression`: when `method = "raw"`, values below this are set to zero.  
+- `keep_expression_above`: optional threshold – keep only cells with expression above it. **Warning:** this changes both the evaluation population and the baseline, and should be compared with the default all-cell result.  
+- `plot`, `plot_title`, `line_color`, `line_size`: control the PR plot appearance.
+
+</details>
+
+**Why PRC-AUC?** ROC-AUC is insensitive to class balance, but rare cell types are exactly where precision matters most. PRC-AUC answers “when I call a cell positive, how often am I right?”, making it more stringent under dropout and background contamination. Always interpret `PR_AUC` against its `Baseline`: the same value is strong at baseline 0.02 and weak at baseline 0.50.
+
+### 5.4 Hierarchical Proportion Plot
 
 Create a publication‑ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub‑types.  
 The **upper panel** draws a layered tree diagram (bubble size ∝ cell count, parent‑child links shown as three‑segment step lines). The **lower panel** (optional) displays per‑group cell‑type proportions as a heatmap perfectly aligned with the terminal leaves.
@@ -703,36 +774,33 @@ res$combined_plot    # combined plot (requires patchwork)
 <details>
 <summary><b>Detailed parameter guide</b></summary>
 
-- **Hierarchy levels**  
-  `Main_cell_types`, `Cell_types`, `Sub_cell_types` are character strings naming columns in `seurat_obj@meta.data`.  
-  Use `NULL` to omit a level. If `Sub_cell_types` is given, `Cell_types` must also be provided.  
-  Category names (e.g. “T cell”) must be **unique within each level** (they can repeat across levels).
+* **Hierarchy levels**
+`Main_cell_types`, `Cell_types`, `Sub_cell_types` are character strings naming columns in `seurat_obj@meta.data`.
+Use `NULL` to omit a level. If `Sub_cell_types` is given, `Cell_types` must also be provided.
+Category names (e.g. “T cell”) must be **unique within each level** (they can repeat across levels).
+* **Partial sub‑clustering**
+It is common that only a subset of cells receives a finer annotation (e.g., only T cells are split into subtypes). The function automatically handles this: a cell without a valid sub‑label becomes a leaf at the deepest level where it has a label. The proportion heatmap is then built from the **union of all terminal leaf labels** – so no population is lost.
+* **Label placement & adaptive height**
+Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
+* **Colour control**
+`col_Main_cell_types`, `col_Cell_types`, `col_Sub_cell_types` accept named or unnamed colour vectors. When missing, the function generates a palette using the internal `paletteDiscrete()` function, which replicates the *stallion* palette from the **ArchR** package. No external ArchR installation is required.
+* **Proportion heatmap**
+`proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).
+`Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑navy colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis, and the number of cells in each group is appended (e.g. “Control (1254)”).
+* **Displaying cell values (`show_value_proportion`)**
+Set `show_value_proportion = TRUE` to overlay formatted numeric proportion values inside the heatmap cells. Text color dynamically switches between black and white based on fill intensity to maximize readability.
+* **Adjustment for unequal group sizes (`adjust_by_group`)**
+When analysing sub‑types derived from a larger population (e.g., immune subsets) and group sizes differ, set `adjust_by_group = TRUE`. This scales proportions by group size relative to the mean group size, highlighting both within-group composition and overall abundance differences. When combined with `show_value_proportion = TRUE`, the displayed values and heatmap colors reflect these adjusted proportions.
 
-- **Partial sub‑clustering**  
-  It is common that only a subset of cells receives a finer annotation (e.g., only T cells are split into subtypes). The function automatically handles this: a cell without a valid sub‑label becomes a leaf at the deepest level where it has a label. The proportion heatmap is then built from the **union of all terminal leaf labels** – so no population is lost.
 
-- **Label placement & adaptive height**  
-  Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
-
-- **Colour control**  
-  `col_Main_cell_types`, `col_Cell_types`, `col_Sub_cell_types` accept named or unnamed colour vectors. When missing, the function generates a palette using the internal `paletteDiscrete()` function, which replicates the *stallion* palette from the **ArchR** package.  No external ArchR installation is required.
-
-- **Proportion heatmap**  
-  `proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).  
-  `Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑red colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis, and, if available, the number of cells in each group is appended (e.g. “Control (1254)”).  
-
-  - **Adjustment for unequal group sizes (`adjust_by_group`)**  
-    When analysing sub‑types derived from a larger population (e.g., immune subsets) and the total number of cells in each group differs substantially, set `adjust_by_group = TRUE`. This option multiplies the row‑wise proportion by the ratio of the group’s cell count to the mean group cell count. The resulting heatmap then reflects both within‑group composition and between‑group abundance differences. The colour scale is automatically normalised across all cells and groups. For broad cell type visualisation or when group sizes are balanced, keep the default `FALSE`.
-
-- **Non‑leaf annotations**  
-  `show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
-
-- **Output**  
-  The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion = FALSE`), and `combined_plot` (NULL unless **patchwork** is installed). All are **ggplot2** objects that can be further customised. The combined plot is automatically printed to the active graphics device.
+* **Non‑leaf annotations**
+`show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
+* **Output**
+The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion = FALSE`), and `combined_plot` (NULL unless **patchwork** is installed). All are **ggplot2** objects that can be further customised. The combined plot is automatically printed to the active graphics device.
 
 </details>
 
-### 5.4 Weighted Voronoi Plot
+### 5.5 Weighted Voronoi Plot
 
 Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data. Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count. Colours follow the same palette logic as other SlimR functions, derived from ArchR but fully built into the package.
 
@@ -806,7 +874,54 @@ res$plot              # the ggplot object
 
 </details>
 
-### 5.5 Built‑in Colour Palettes
+### 5.6 Grouped Gene Z-Score Heatmap
+
+Generate a mean Z-score expression heatmap across specified cell groups from a Seurat object using `pheatmap`. Optionally computes an integrated marker/pathway score per cell using `AUCell` and appends its group-level mean Z-score as a weighted top row. Colors are styled with a publication-ready blue-white-red gradient for heatmap values, while annotation bars seamlessly integrate with SlimR's internal discrete palettes (derived from ArchR).
+
+```r
+# Basic group-level Z-score heatmap without AUCell integrated row
+p <- Plot_Group_Gene_Heatmap(
+  seurat_obj     = sce,
+  features       = c("CD3D", "CD3E", "CD4", "CD8A"),
+  group_by       = "celltype",
+  add_aucell_row = FALSE
+)
+
+# Heatmap with an integrated pathway AUCell score on the top row
+p <- Plot_Group_Gene_Heatmap(
+  seurat_obj      = sce,
+  features        = c("TNF", "IL6", "NFKB1", "RELA"),
+  group_by        = "orig.ident",
+  add_aucell_row  = TRUE,
+  aucell_row_name = "NFkB_Pathway_AUC"
+)
+
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+* **Data & Feature Selection**
+`seurat_obj` accepts both Seurat v4 and v5 objects.
+`features` is a character vector of gene names to display. Missing features in the dataset are automatically omitted with a warning.
+`group_by` specifies a metadata column in `seurat_obj@meta.data` (e.g., `"celltype"`, `"orig.ident"`) to define group aggregations.
+* **Assay & Data Extraction (`assay`, `slot_or_layer`)**
+`assay` specifies which assay to pull expression values from (defaults to `Seurat::DefaultAssay()`).
+`slot_or_layer` defines the data layer (default `"data"`). 
+* **Integrated AUCell Row (`add_aucell_row`, `aucell_row_name`)**
+* `add_aucell_row = TRUE` (default) calculates cell-level enrichment scores across all specified `features` using `AUCell`. Group means of these AUC scores are Z-score normalized and displayed as the top row.
+* `aucell_row_name` specifies the row label for this top row (default `"Integrated_Score"`).
+* Set `add_aucell_row = FALSE` to render only individual gene Z-score rows.
+* **Clustering & Ordering (`cluster_rows`, `cluster_cols`)**
+Both `cluster_rows` and `cluster_cols` default to `FALSE` to strictly preserve the input gene list order and the original group order from `seurat_obj@meta.data`. Set to `TRUE` if hierarchical clustering dendrograms are desired.
+* **Colour & Aesthetics (`palette_set`, `scale_range`)**
+`palette_set` controls discrete annotation bar colors for cell groups via the internal `paletteDiscrete()` function (default `"stallion"`).
+Heatmap body values use a 11-color `RdBu` palette smoothly interpolated across custom breaks.
+`scale_range` defines the numeric bounds for Z-scores (default `c(-1.25, 1.25)`). Values exceeding these bounds are safely clamped to avoid blank cells.
+
+</details>
+
+### 5.7 Built‑in Colour Palettes
 
 Since *ArchR* is not available on CRAN, SlimR incorporates its colour palettes directly (via the internal function `paletteDiscrete()`) so that users can enjoy the same publication‑quality colours without any additional installation. The palettes, including the default stallion, are hard‑coded in the package and require no external dependencies.
 

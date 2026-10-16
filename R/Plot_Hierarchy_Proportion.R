@@ -2,11 +2,11 @@
 #'
 #' @description
 #' Creates a publication‑quality composite figure with a hierarchical tree
-#' panel and an optional proportion heatmap.  Leaf labels are connected to the
+#' panel and an optional proportion heatmap. Leaf labels are connected to the
 #' terminal nodes by short vertical sticks and placed at a fixed distance
 #' below the tree, guaranteeing a clean separation and perfect top alignment
-#' of all cell‑type names.  Short vertical ticks on top of the heatmap mark
-#' each column, aligning with the labels above.  The tree height is independent
+#' of all cell‑type names. Short vertical ticks on top of the heatmap mark
+#' each column, aligning with the labels above. The tree height is independent
 #' of label length; the heatmap sits tightly beneath the labels.
 #'
 #' @section Colour palette:
@@ -25,32 +25,31 @@
 #' @param Main_cell_types Character string naming a column in
 #'   \code{seurat_obj@meta.data} that holds the top‑level cell‑type labels.
 #' @param col_Main_cell_types Optional named or unnamed character vector of
-#'   colours for the \code{Main_cell_types} categories.  If \code{NULL},
+#'   colours for the \code{Main_cell_types} categories. If \code{NULL},
 #'   colours are generated automatically.
 #' @param Cell_types Character string naming a column with second‑level
-#'   (sub‑type) labels.  Use \code{NULL} if no second level exists.
+#'   (sub‑type) labels. Use \code{NULL} if no second level exists.
 #' @param col_Cell_types Optional colours for the \code{Cell_types} categories.
 #' @param Sub_cell_types Character string naming a column with third‑level
-#'   (sub‑sub‑type) labels.  Use \code{NULL} if absent.  \code{Cell_types}
+#'   (sub‑sub‑type) labels. Use \code{NULL} if absent. \code{Cell_types}
 #'   must be supplied when \code{Sub_cell_types} is used.
 #' @param col_Sub_cell_types Optional colours for the \code{Sub_cell_types}
 #'   categories.
-#' @param proportion Logical scalar.  If \code{TRUE} (the default), a
+#' @param proportion Logical scalar. If \code{TRUE} (the default), a
 #'   proportion heatmap is drawn below the tree; if \code{FALSE}, only the
 #'   tree with labels is returned.
 #' @param Groups Character string naming a \code{meta.data} column that
-#'   defines sample groups for the proportion heatmap.  Required when
+#'   defines sample groups for the proportion heatmap. Required when
 #'   \code{proportion = TRUE}.
-#' @param adjust_by_group Logical scalar.  If \code{FALSE} (default), each
-#'   row of the heatmap shows the proportion of each terminal cell type
-#'   within the corresponding group (row‑wise percentage).  Set to \code{TRUE}
-#'   when displaying sub‑types derived from a larger, unevenly distributed
-#'   population (e.g., immune subsets isolated from different conditions
-#'   where total immune cell numbers differ).  In that case, the row‑wise
-#'   proportion is multiplied by the ratio of the group’s total cell count
-#'   to the mean group cell count, highlighting both within‑group composition
-#'   and between‑group abundance differences.  The colour scale is then
-#'   normalised across all cells and groups.
+#' @param adjust_by_group Logical scalar. If \code{FALSE} (default), each
+#'   row of the heatmap shows the proportion (%) of each terminal cell type
+#'   within the corresponding group. Set to \code{TRUE} when displaying
+#'   sub‑types derived from a larger, unevenly distributed population (e.g.,
+#'   immune subsets isolated from different conditions where total immune cell
+#'   numbers differ).
+#' @param show_value_proportion Logical scalar. If \code{TRUE}, displays the
+#'   calculated percentage proportion value as formatted text inside each cell
+#'   of the heatmap. Default is \code{FALSE}.
 #' @param show_labels Logical scalar. If \code{TRUE} (the default), text
 #'   labels are placed next to the non‑leaf Main and Cell level nodes.
 #' @param low_col Character string for the lowest proportion colour in the
@@ -83,28 +82,20 @@
 #' @importFrom ggplot2 scale_size_area scale_x_continuous scale_y_continuous
 #' @importFrom ggplot2 expansion theme_void theme element_text element_blank margin
 #' @importFrom ggplot2 coord_cartesian guide_legend geom_tile scale_fill_gradient
-#' @importFrom ggplot2 element_rect
+#' @importFrom ggplot2 element_rect labs
 #' @importFrom scales hue_pal
 #'
 #' @examples
 #' \dontrun{
-#' # Full three-level hierarchy with proportion heatmap
+#' # Full three-level hierarchy with percentage proportion heatmap
 #' res <- Plot_Hierarchy_Proportion(
-#'   seurat_obj          = sce,
-#'   Main_cell_types     = "Main_cell_type",
-#'   Cell_types          = "Cell_type",
-#'   Sub_cell_types      = "Sub_cell_type",
-#'   proportion          = TRUE,
-#'   Groups              = "orig.ident"
-#' )
-#'
-#' # Only the tree, user-specified colours
-#' res <- Plot_Hierarchy_Proportion(
-#'   sce,
-#'   "Main_cell_type",
-#'   col_Main_cell_types = c(Immune = "red", Stromal = "blue", Epithelial = "green"),
-#'   "Cell_type",
-#'   proportion = FALSE
+#'   seurat_obj            = sce,
+#'   Main_cell_types       = "Main_cell_type",
+#'   Cell_types            = "Cell_type",
+#'   Sub_cell_types        = "Sub_cell_type",
+#'   proportion            = TRUE,
+#'   Groups                = "orig.ident",
+#'   show_value_proportion = TRUE
 #' )
 #' }
 Plot_Hierarchy_Proportion <- function(
@@ -118,6 +109,7 @@ Plot_Hierarchy_Proportion <- function(
     proportion = TRUE,
     Groups = NULL,
     adjust_by_group = FALSE,
+    show_value_proportion = FALSE,
     show_labels = TRUE,
     low_col = "white",
     high_col = "navy"
@@ -132,6 +124,7 @@ Plot_Hierarchy_Proportion <- function(
   stopifnot(is.logical(proportion), length(proportion) == 1L)
   stopifnot(is.logical(show_labels), length(show_labels) == 1L)
   stopifnot(is.logical(adjust_by_group), length(adjust_by_group) == 1L)
+  stopifnot(is.logical(show_value_proportion), length(show_value_proportion) == 1L)
 
   has_Cell <- !is.null(Cell_types)
   if (has_Cell) {
@@ -323,7 +316,6 @@ Plot_Hierarchy_Proportion <- function(
     if (!is.null(names)) setNames(cols, names) else cols
   }
 
-  # Use the built-in paletteDiscrete (replaces ArchR::paletteDiscrete)
   get_palette <- function(cats, user_cols) {
     if (!is.null(user_cols)) {
       if (!is.null(names(user_cols))) {
@@ -506,10 +498,11 @@ Plot_Hierarchy_Proportion <- function(
       mean_size <- mean(group_sizes, na.rm = TRUE)
       if (mean_size == 0) mean_size <- 1  # prevent division by zero
       size_factor <- group_sizes / mean_size
-      # Apply factor to each row based on its group
       tab$Proportion <- tab$Proportion * size_factor[tab$Group]
     }
 
+    # Convert Proportion to Percentage (0 - 100)
+    tab$Proportion <- tab$Proportion * 100
     tab$x_num <- as.numeric(tab$End)
 
     # Build group labels with cell counts
@@ -531,12 +524,41 @@ Plot_Hierarchy_Proportion <- function(
     max_prop <- max(tab$Proportion, na.rm = TRUE)
     prop_breaks <- pretty(c(min_prop, max_prop), n = 4)
 
+    # Prepare text overlay for values (%)
+    tab$prop_text <- sprintf("%.2f", tab$Proportion)
+    # Dynamic text color (white for high intensity cells, black for low)
+    cutoff <- min_prop + (max_prop - min_prop) * 0.65
+    tab$text_col <- ifelse(tab$Proportion > cutoff, "white", "black")
+
+    # Header label for y-axis categories, placed below group list with plain text style
+    y_axis_header <- data.frame(
+      x = 0.4,
+      y = 0.1,
+      label = "Group (Cell Number)"
+    )
+
     p_prop <- ggplot2::ggplot() +
       ggplot2::geom_tile(
         data = tab,
         ggplot2::aes(x = .data$x_num, y = .data$y_num, fill = .data$Proportion),
         width = 0.8, height = 0.8, colour = "white", linewidth = 0.3
-      ) +
+      )
+
+    if (show_value_proportion) {
+      p_prop <- p_prop +
+        ggplot2::geom_text(
+          data = tab,
+          ggplot2::aes(
+            x = .data$x_num, 
+            y = .data$y_num, 
+            label = .data$prop_text, 
+            colour = I(.data$text_col)
+          ),
+          size = 2.8
+        )
+    }
+
+    p_prop <- p_prop +
       ggplot2::geom_rect(
         data = border_df,
         ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin, ymax = .data$ymax),
@@ -547,11 +569,16 @@ Plot_Hierarchy_Proportion <- function(
         ggplot2::aes(x = .data$x, xend = .data$xend, y = .data$y, yend = .data$yend),
         colour = "black", linewidth = 0.3
       ) +
+      ggplot2::geom_text(
+        data = y_axis_header,
+        ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
+        hjust = 1, vjust = 1, size = 3.2, fontface = "plain"
+      ) +
       ggplot2::scale_fill_gradient(
         low = low_col, high = high_col,
         limits = c(min_prop, max_prop),
         breaks = prop_breaks,
-        name = if (adjust_by_group) "Adjusted Proportion" else "Proportion"
+        name = if (adjust_by_group) "Adjusted Proportion (%)" else "Proportion (%)"
       ) +
       ggplot2::scale_x_continuous(expand = c(0, 0)) +
       ggplot2::scale_y_continuous(
@@ -559,11 +586,11 @@ Plot_Hierarchy_Proportion <- function(
         labels = group_labels,
         expand = c(0, 0)
       ) +
-      ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(0.5, n_groups + 0.7), clip = "off") +
+      ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(-0.2, n_groups + 0.7), clip = "off") +
       ggplot2::theme_minimal() +
       ggplot2::theme(
         axis.text.x = ggplot2::element_blank(),
-        axis.text.y = ggplot2::element_text(size = 9, face = "bold"),
+        axis.text.y = ggplot2::element_text(size = 9, face = "plain"),
         axis.title = ggplot2::element_blank(),
         panel.grid.major = ggplot2::element_blank(),
         panel.grid.minor = ggplot2::element_blank(),
